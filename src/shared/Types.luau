@@ -78,6 +78,9 @@ export type EnemyDef = {
 	aggroRange: number,
 	attackRange: number,
 	attackCooldown: number,
+	-- Seconds the enemy telegraphs (glows red and stands still) before a strike lands. 0 or left
+	-- out means it strikes at once. The AI checks every 0.25 seconds, so it rounds up to that.
+	attackWindup: number?,
 	xp: number,
 	gold: number,
 	respawnSeconds: number,

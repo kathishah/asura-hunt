@@ -14,6 +14,7 @@ Short plans for each milestone, then how to run them in parallel with separate b
 
 **Touches:** `EnemyService`, `CombatService`, `Remotes`, `Types` (`EnemyDef`), `Config/Enemies`, new `src/client/UI/Effects.luau`, new `Config/Sounds`, `Config/Animations`.
 **Needs from you:** pick sounds from the Creator Store (check the licence), upload or pick player animations.
+**Built so far (branch `m1-combat-feel`):** enemy telegraphs. Each enemy has `attackWindup` in `Config/Enemies.luau`. When it is in reach and its attack is ready it stands still and glows red (a Roblox `Highlight`, which has not been checked in Studio), then strikes. If you step out of reach or die during the windup, the attack is cancelled. The timing is in `Services/AttackTiming.luau` and is tested with `lune run tests/run`. **Still to do:** hit effects, animations and sounds, which need your choices and assets.
 **Done when:** a Hungry Ghoul visibly winds up, a dodge in the window avoids the hit, and every hit has a sound and a flash.
 
 ### M2: First zone (in progress)

@@ -13,6 +13,9 @@ local Types = require(Shared.Types)
 
 local DataService = require(script.Parent.DataService)
 local EnemyService = require(script.Parent.EnemyService)
+local AimAssist = require(script.Parent.AimAssist)
+local SwingEffect = require(script.Parent.SwingEffect)
+local Effects = require(Shared.Config.Effects)
 
 local COMBAT = GameConfig.COMBAT
 
@@ -65,13 +68,36 @@ local function computeDamage(data: Types.PlayerData, multiplier: number): number
 	return COMBAT.baseDamage * path.damageMultiplier * strengthBonus * levelBonus * multiplier
 end
 
+-- Turns the player toward the nearest enemy in reach if nobody is in front of them yet.
+local function aimAtNearest(root: BasePart, range: number, coneDot: number)
+	local reach = math.min(range, COMBAT.aimAssistRange)
+	local nearby = EnemyService.getEnemiesInCone(root.Position, root.CFrame.LookVector, reach, -1)
+	local offsets = {}
+	for _, enemy in nearby do
+		local offset = enemy.root.Position - root.Position
+		table.insert(offsets, { x = offset.X, z = offset.Z })
+	end
+
+	local look = root.CFrame.LookVector
+	local x, z = AimAssist.turnTarget(offsets, look.X, look.Z, coneDot)
+	if x and z then
+		local from = root.Position
+		root.CFrame = CFrame.lookAt(from, from + Vector3.new(x, 0, z))
+	end
+end
+
 local function strike(
 	player: Player,
 	root: BasePart,
 	range: number,
 	coneDot: number,
-	damage: number
+	damage: number,
+	swingColor: Color3,
+	swingThickness: number
 )
+	aimAtNearest(root, range, coneDot)
+	SwingEffect.play(root, range, coneDot, swingColor, swingThickness)
+
 	local damageRemote = Remotes.get("DamageNumber")
 	local targets =
 		EnemyService.getEnemiesInCone(root.Position, root.CFrame.LookVector, range, coneDot)
@@ -112,7 +138,15 @@ local function onAttack(player: Player)
 	end
 
 	local path = Paths[data.path]
-	strike(player, root, path.attackRange, path.attackConeDot, computeDamage(data, multiplier))
+	strike(
+		player,
+		root,
+		path.attackRange,
+		path.attackConeDot,
+		computeDamage(data, multiplier),
+		Effects.SWING.attackColor,
+		Effects.SWING.thickness
+	)
 end
 
 local function onSkill(player: Player)
@@ -130,7 +164,15 @@ local function onSkill(player: Player)
 
 	local skill = Paths[data.path].skill
 	state.nextSkillAt = now + skill.cooldown
-	strike(player, root, skill.range, skill.coneDot, computeDamage(data, skill.damageMultiplier))
+	strike(
+		player,
+		root,
+		skill.range,
+		skill.coneDot,
+		computeDamage(data, skill.damageMultiplier),
+		Effects.SWING.skillColors[data.path] or Effects.SWING.attackColor,
+		Effects.SWING.skillThickness
+	)
 end
 
 local function onDodge(player: Player)
