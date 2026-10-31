@@ -8,6 +8,40 @@
 				"$path": "src/shared"
 			}
 		},
+		"Lighting": {
+			"$className": "Lighting",
+			"$ignoreUnknownInstances": true,
+			"$properties": {
+				"ClockTime": 17.6,
+				"Brightness": 1.2,
+				"ExposureCompensation": 0.2,
+				"Ambient": { "Color3": [0.16, 0.12, 0.22] },
+				"OutdoorAmbient": { "Color3": [0.3, 0.24, 0.38] }
+			},
+			"Atmosphere": {
+				"$className": "Atmosphere",
+				"$properties": {
+					"Density": 0.38,
+					"Offset": 0.2,
+					"Haze": 1.8,
+					"Glare": 0,
+					"Color": { "Color3": [0.78, 0.62, 0.6] },
+					"Decay": { "Color3": [0.55, 0.4, 0.5] }
+				}
+			},
+			"Bloom": {
+				"$className": "BloomEffect",
+				"$properties": { "Intensity": 0.6, "Size": 24, "Threshold": 1 }
+			},
+			"ColorCorrection": {
+				"$className": "ColorCorrectionEffect",
+				"$properties": {
+					"Saturation": 0.1,
+					"Contrast": 0.1,
+					"TintColor": { "Color3": [1, 0.92, 0.95] }
+				}
+			}
+		},
 		"ServerScriptService": {
 			"$className": "ServerScriptService",
 			"Server": {
@@ -27,7 +61,8 @@
 			}
 		},
 		"Workspace": {
-			"$className": "Workspace"
+			"$className": "Workspace",
+			"$ignoreUnknownInstances": true
 		}
 	}
 }

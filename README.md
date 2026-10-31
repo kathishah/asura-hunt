@@ -61,4 +61,5 @@ docs/GAME_DESIGN.md      Design, theme, roadmap
 src/shared               Types, Remotes, Config (Enemies, Paths, GameConfig)
 src/server               Main + Services (Data, Enemy, Combat)
 src/client               Main, Input, HUD
+tools                    Studio command bar scripts (enemy gallery, zone builder). Not synced.
 ```
