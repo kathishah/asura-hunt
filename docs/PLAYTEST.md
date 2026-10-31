@@ -54,7 +54,7 @@ Known and expected: the HUD panel can overlap Roblox's chat, enemies glide with 
 
 ## 3. `m4-shop`: shop and equipment
 
-- [x] **Shop opens.** The "Shop [B]" button at bottom-left and the B key both open and close the shop window. *Passed: the button opens the window (`docs/reference/playtest/m4-shop.jpg`). The B key also opens it and a second press closes it (tested in a later run).*
+- [x] **Shop opens.** The "Shop [P]" button at bottom-left and the P key both open and close the shop window (the key was B at first, then moved to P; B is reserved for a future backpack). *Passed: the button opens the window (`docs/reference/playtest/m4-shop.jpg`). The key opens and closes it, and B no longer does anything (tested in a later run).*
 - [x] **Buying.** With enough gold, Buy takes the gold and the button becomes Equip. Without enough gold the button is grey and does nothing. *Passed: gold 300 to 260 and the button became Equip. An unaffordable item shows a grey button.*
 - [x] **Equipping a weapon.** Equip the Iron Sword as Yodha. Your hits do about 15% more damage (check the damage numbers). The button becomes Unequip, and unequipping removes the bonus. *Passed: damage 11.5 with the Iron Sword (10 without), and the button became Unequip.*
 - [x] **Wrong path.** As Yodha, the staffs show a grey Equip button. Switching path to Rishi then lets you equip a staff. *Passed: as Yodha the Ash Staff shows a grey Equip; as Rishi it turns green. A Yodha sword left equipped adds nothing on Rishi (damage 8), and the staff gives 9.2.*
