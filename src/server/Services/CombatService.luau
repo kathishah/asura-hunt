@@ -31,6 +31,13 @@ local states: { [Player]: CombatState } = {}
 
 local CombatService = {}
 
+-- Tells the player's HUD when an ability will be ready again (see Cooldown and UI/Cooldowns).
+-- The server still enforces the cooldown itself; this is only for display.
+local function publishCooldown(player: Player, name: string, seconds: number)
+	player:SetAttribute(`{name}Cooldown`, seconds)
+	player:SetAttribute(`{name}ReadyAt`, workspace:GetServerTimeNow() + seconds)
+end
+
 local function getState(player: Player): CombatState
 	local state = states[player]
 	if not state then
@@ -164,6 +171,7 @@ local function onSkill(player: Player)
 
 	local skill = Paths[data.path].skill
 	state.nextSkillAt = now + skill.cooldown
+	publishCooldown(player, "Skill", skill.cooldown)
 	strike(
 		player,
 		root,
@@ -186,6 +194,7 @@ local function onDodge(player: Player)
 		return
 	end
 	state.nextDodgeAt = now + COMBAT.dodgeCooldown
+	publishCooldown(player, "Dodge", COMBAT.dodgeCooldown)
 
 	-- The dash itself is played on the client; the server only grants the i-frames.
 	player:SetAttribute("Invulnerable", true)
