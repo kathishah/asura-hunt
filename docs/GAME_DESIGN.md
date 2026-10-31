@@ -23,14 +23,18 @@ All numbers live in `src/shared/Config/Paths.luau`.
 
 ## Enemies (folklore-inspired creature types)
 
-| Enemy | Role | Notes |
-| --- | --- | --- |
-| Pishacha | Weak grunt | Teaches basic combat |
-| Vetala | Mid-tier | Faster, hits harder |
-| Rakshasa | Elite | Tough zone guardian |
-| Krodha, the Rage Rakshasa | Boss | Original character; huge health pool |
+| Name in game | Folklore name | Role | Notes |
+| --- | --- | --- | --- |
+| Hungry Ghoul | Pishacha | Weak grunt | Teaches basic combat |
+| Backfoot Hag | Chudail | Fast ambusher | Ghost of a woman with backwards feet; outruns a walking player |
+| Shroud Walker | Vetala | Mid-tier | Faster, hits harder |
+| Night Witch | Daayan | Ranged caster | Stops far away and throws a dodgeable curse bolt |
+| Tusked Brute | Rakshasa | Elite | Tough zone guardian |
+| The Rage King | Krodha | Boss | Original character; huge health pool |
 
-Content guidelines: use creature types from folklore. Do not use gods or goddesses as enemies, and avoid religious symbols as decoration or jokes. Keep it appropriate for a young audience and check Roblox's Community Standards before publishing.
+Naming: players see an easy English name with the folklore name in small text beneath it. Code ids stay as the folklore name. Planned later: a female warrior "Ogre Queen" (Rakshasi) so the female enemies are not all hags.
+
+Content guidelines: use creature types from folklore. Do not use gods or goddesses (including forms such as Mohini), semi-divine beings (Yakshini, Naga, Dakini) or named characters from the epics as enemies, and avoid religious symbols as decoration or jokes. Keep it appropriate for a young audience and check Roblox's Community Standards before publishing.
 
 ## Progression
 

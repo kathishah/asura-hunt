@@ -31,7 +31,7 @@ Working title: **Asura Hunt** (can be renamed). Full design and roadmap: `docs/G
 7. **Do not invent Roblox APIs.** If unsure a method or property exists, check https://create.roblox.com/docs/reference/engine before using it, and say when something is unverified.
 8. **Saving data:** never save over a player's record if loading failed (see `loadFailed` in `DataService`). Bump `GameConfig.DATA_VERSION` and handle migration when the saved shape changes.
 9. **Keep changes small.** One feature per change. Do not refactor unrelated files.
-10. **Content:** keep it appropriate for a young audience. Enemies are folklore creatures (Pishacha, Vetala, Rakshasa). Do not use deities or religious symbols as enemies, loot or jokes.
+10. **Content:** keep it appropriate for a young audience. Enemies are folklore creatures (Pishacha, Vetala, Chudail, Daayan, Rakshasa). Give each an easy English `displayName` plus the folklore name in `folkloreName`. Do not use deities, semi-divine beings or religious symbols as enemies, loot or jokes, and do not use named characters from the epics.
 
 ## Style
 

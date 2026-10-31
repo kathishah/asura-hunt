@@ -40,14 +40,14 @@ The panel at top-left shows level, XP, gold and stats. Buttons let you switch pa
 ## What works in this skeleton
 
 - Two paths (Yodha melee, Rishi ranged) with a basic combo and one skill each
-- Four enemy types including a boss, with chase/attack/leash/respawn AI
+- Six enemy types including a boss and a ranged witch, with chase/attack/leash/respawn AI
 - XP, gold, levelling, stat points (Strength, Vitality)
 - Data saving with retries, autosave and save-on-exit
 - Placeholder HUD and floating damage numbers
 
 ## Known rough edges (expected at this stage)
 
-- **Nothing has been run in Studio yet.** The code was written without the ability to launch Roblox, so expect to fix small things on first play. Paste any red errors from the Output window to your AI tool.
+- **Light playtesting only.** The game has been run in Studio, but only briefly. Paste any red errors from the Output window to your AI tool.
 - Enemies are built from simple blocks, balls and cylinders. Reshape them in `src/shared/Config/EnemyLooks.luau`. If they float or sink into the ground, adjust `HipHeight` in `EnemyService.buildModel`.
 - No attack animations or effects yet, so combat will feel flat until you add them in Studio.
 - Enemy spawns use a default layout. To place them yourself, add Parts to the map, tag them `EnemySpawn` (Tag Editor plugin or the Properties panel) and give each a string attribute `EnemyId` (for example `Vetala`).
