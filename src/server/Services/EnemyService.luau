@@ -8,6 +8,7 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BodyBuilder = require(Shared.BodyBuilder)
@@ -16,6 +17,7 @@ local Enemies = require(Shared.Config.Enemies)
 local EnemyLooks = require(Shared.Config.EnemyLooks)
 local Types = require(Shared.Types)
 local AttackTiming = require(script.Parent.AttackTiming)
+local HealthBar = require(script.Parent.HealthBar)
 local EnemyBehaviors = require(script.Parent.EnemyBehaviors)
 
 local SPAWN_TAG = "EnemySpawn"
@@ -69,7 +71,9 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Nameplate"
 	gui.Adornee = root
-	gui.Size = UDim2.fromOffset(200, 42)
+	local barConfig = Effects.HEALTH_BAR
+	local barSize = if def.isBoss then barConfig.boss else barConfig
+	gui.Size = UDim2.fromOffset(200, 58)
 	-- Sit above the tallest part (horns, flames), not just the hitbox.
 	local boxCFrame, boxSize = model:GetBoundingBox()
 	local top = math.max(def.size.Y / 2, boxCFrame.Position.Y + boxSize.Y / 2 - root.Position.Y)
@@ -78,7 +82,7 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	gui.MaxDistance = 80
 
 	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 0.6)
+	label.Size = UDim2.new(1, 0, 0, 20)
 	label.BackgroundTransparency = 1
 	label.TextColor3 = if def.isBoss then Color3.fromRGB(255, 190, 80) else Color3.new(1, 1, 1)
 	label.TextStrokeTransparency = 0.4
@@ -86,10 +90,26 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	label.TextSize = 14
 	label.Parent = gui
 
+	-- The health bar sits between the name and the folklore name.
+	local back = Instance.new("Frame")
+	back.Name = "HealthBack"
+	back.AnchorPoint = Vector2.new(0.5, 0)
+	back.Position = UDim2.new(0.5, 0, 0, 22)
+	back.Size = UDim2.fromOffset(barSize.width, barSize.height)
+	back.BackgroundColor3 = barConfig.back
+	back.BorderSizePixel = 0
+	back.Parent = gui
+
+	local fill = Instance.new("Frame")
+	fill.Name = "HealthFill"
+	fill.Size = UDim2.fromScale(1, 1)
+	fill.BorderSizePixel = 0
+	fill.Parent = back
+
 	-- The folklore name, small and quiet, so players pick it up over time.
 	local subtitle = Instance.new("TextLabel")
-	subtitle.Size = UDim2.fromScale(1, 0.4)
-	subtitle.Position = UDim2.fromScale(0, 0.6)
+	subtitle.Size = UDim2.new(1, 0, 0, 16)
+	subtitle.Position = UDim2.fromOffset(0, 22 + barSize.height + 2)
 	subtitle.BackgroundTransparency = 1
 	subtitle.Text = def.folkloreName
 	subtitle.TextColor3 = Color3.fromRGB(200, 200, 210)
@@ -101,6 +121,13 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	local function refresh()
 		label.Text =
 			`{def.displayName}  {math.ceil(humanoid.Health)}/{math.ceil(humanoid.MaxHealth)}`
+		local fraction = HealthBar.fraction(humanoid.Health, humanoid.MaxHealth)
+		fill.BackgroundColor3 = HealthBar.colorFor(fraction, barConfig.colors)
+		TweenService:Create(
+			fill,
+			TweenInfo.new(barConfig.smoothSeconds),
+			{ Size = UDim2.fromScale(fraction, 1) }
+		):Play()
 	end
 	refresh()
 	humanoid.HealthChanged:Connect(refresh)

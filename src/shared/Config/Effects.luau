@@ -21,6 +21,21 @@ local Effects = {
 		seconds = 0.12,
 		color = Color3.fromRGB(255, 255, 255),
 	},
+	-- The bar under an enemy's name that shrinks as it loses health.
+	HEALTH_BAR = {
+		width = 120, -- pixels
+		height = 9,
+		boss = { width = 180, height = 12 },
+		back = Color3.fromRGB(25, 20, 28),
+		-- The fill takes the first colour whose `upTo` fraction it is at or below, so it goes from
+		-- green to yellow to red as health drops.
+		colors = {
+			{ upTo = 0.25, color = Color3.fromRGB(220, 60, 50) },
+			{ upTo = 0.5, color = Color3.fromRGB(235, 190, 60) },
+			{ upTo = 1, color = Color3.fromRGB(90, 200, 90) },
+		},
+		smoothSeconds = 0.15, -- how quickly the bar slides to its new length
+	},
 }
 
 return Effects
