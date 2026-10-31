@@ -54,11 +54,11 @@ Known and expected: the HUD panel can overlap Roblox's chat, enemies glide with 
 
 ## 3. `m4-shop`: shop and equipment
 
-- [x] **Shop opens.** The "Shop [B]" button at bottom-left and the B key both open and close the shop window. *Passed: the button opens the window (`docs/reference/playtest/m4-shop.jpg`). The B key was not tried.*
+- [x] **Shop opens.** The "Shop [B]" button at bottom-left and the B key both open and close the shop window. *Passed: the button opens the window (`docs/reference/playtest/m4-shop.jpg`). The B key also opens it and a second press closes it (tested in a later run).*
 - [x] **Buying.** With enough gold, Buy takes the gold and the button becomes Equip. Without enough gold the button is grey and does nothing. *Passed: gold 300 to 260 and the button became Equip. An unaffordable item shows a grey button.*
 - [x] **Equipping a weapon.** Equip the Iron Sword as Yodha. Your hits do about 15% more damage (check the damage numbers). The button becomes Unequip, and unequipping removes the bonus. *Passed: damage 11.5 with the Iron Sword (10 without), and the button became Unequip.*
 - [x] **Wrong path.** As Yodha, the staffs show a grey Equip button. Switching path to Rishi then lets you equip a staff. *Passed: as Yodha the Ash Staff shows a grey Equip; as Rishi it turns green. A Yodha sword left equipped adds nothing on Rishi (damage 8), and the staff gives 9.2.*
-- [x] **Armour.** Equipping the Leather Vest raises max health by 30 and the Bronze Mail by 80. *Passed: Bronze Mail gave max health 180. The Leather Vest alone was not measured, and the Mail replaces the Vest in the armor slot.*
+- [x] **Armour.** Equipping the Leather Vest raises max health by 30 and the Bronze Mail by 80. *Passed: Bronze Mail gave max health 180, and the Leather Vest alone took max health from 100 to 130 (tested in a later run, after earning the 50 gold by killing Ghouls). The Mail replaces the Vest in the armor slot.*
 - [x] **Items stay equipped.** After you die and respawn, the weapon and armour bonuses are still applied. *Passed: after dying and respawning max health stayed 180 and damage stayed 9.2.*
 - [ ] **Saving (needs a published place).** *Not tested: the place is unpublished.* Publish the place and turn on Studio access to API services. Buy something, leave, rejoin: it is still there. Only then does the saved-data upgrade really get exercised.
 - [ ] **Prices feel right.** *Needs your judgment: 40 gold is 8 Ghoul kills.* Is 40 gold for the first item about right for how fast you earn it? Note what to change in `Config/Items.luau`.
@@ -74,7 +74,7 @@ Found, not fixed:
 - The chat panel covers the HUD for the first few seconds after joining (known).
 - A test grant of gold needed a temporary server script, because Studio's command bar only runs on the client. It was removed.
 
-Not tested: saving, the B key, the Leather Vest on its own, a full boss fight, frame rate, and walking and swinging by hand. Rojo's plugin panel is too narrow to show the port field, so use the default port 34872 for each branch (one at a time).
+Not tested: saving (needs a published place), a full boss fight, and the shop merged with the later combat changes. Frame rate felt fine to the human. Rojo's plugin panel is too narrow to show the port field, so use the default port 34872 for each branch (one at a time).
 
 ## After testing
 
