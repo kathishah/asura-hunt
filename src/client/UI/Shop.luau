@@ -1,5 +1,6 @@
 --!strict
--- The shop screen. Open it with the Shop button or the B key. It lists every item in Config/Items
+-- The shop screen. Open it with the Shop button or the P key (B is kept for a future backpack
+-- screen, and S would clash with walking backward). It lists every item in Config/Items
 -- with a Buy, Equip or Unequip button. It only asks; the server checks and does everything.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -84,7 +85,7 @@ function Shop.start(screen: ScreenGui)
 	toggle.TextColor3 = Color3.new(1, 1, 1)
 	toggle.Font = Enum.Font.GothamBold
 	toggle.TextSize = 14
-	toggle.Text = "Shop [B]"
+	toggle.Text = "Shop [P]"
 	toggle.Parent = screen
 
 	local function flip()
@@ -92,7 +93,7 @@ function Shop.start(screen: ScreenGui)
 	end
 	toggle.Activated:Connect(flip)
 	UserInputService.InputBegan:Connect(function(input, processed)
-		if not processed and input.KeyCode == Enum.KeyCode.B then
+		if not processed and input.KeyCode == Enum.KeyCode.P then
 			flip()
 		end
 	end)
