@@ -34,6 +34,12 @@ local PAINT = C(158, 74, 56)
 local OCHRE = C(196, 160, 96)
 local WOOD = C(70, 52, 40)
 local WARM = C(255, 176, 80)
+-- The pillar hall is a calm beige and grey, lit by pale dim lanterns, so it does not glow orange.
+local HALL_PILLAR = C(176, 168, 152)
+local HALL_STONE = C(132, 128, 120)
+local HALL_ROOF = C(116, 114, 108)
+local HALL_BAND = C(150, 142, 126)
+local HALL_LIGHT = C(255, 238, 205)
 local CZ = -110
 
 local old = workspace:FindFirstChild("Zone1")
@@ -104,12 +110,12 @@ local function model(name)
 	return m
 end
 
-local function lantern(parent, x, y, z, color)
+local function lantern(parent, x, y, z, color, brightness, range)
 	local lamp = part(parent, "Lantern", V(1, 1.4, 1), CFrame.new(x, y, z), color, M.Neon)
 	local light = Instance.new("PointLight")
 	light.Color = color
-	light.Brightness = 1.2
-	light.Range = 24
+	light.Brightness = brightness or 1.2
+	light.Range = range or 24
 	light.Parent = lamp
 end
 
@@ -261,20 +267,20 @@ local function pillarHall(x0, z0, cols, rows, dx, dz, height)
 	for c = 0, cols - 1 do
 		for r = 0, rows - 1 do
 			local x, z = x0 + c * dx, z0 + r * dz
-			cyl(hall, "Pillar", height, 2.2, V(x, height / 2, z), STONE, M.Brick)
-			part(hall, "Foot", V(3.4, 0.8, 3.4), CFrame.new(x, 0.9, z), STONE_DARK, M.Cobblestone)
+			cyl(hall, "Pillar", height, 2.2, V(x, height / 2, z), HALL_PILLAR, M.Concrete)
+			part(hall, "Foot", V(3.4, 0.8, 3.4), CFrame.new(x, 0.9, z), HALL_STONE, M.Cobblestone)
 			local cap = CFrame.new(x, height + 0.6, z)
-			part(hall, "Cap", V(3.6, 1.2, 3.6), cap, STONE_DARK, M.Cobblestone)
+			part(hall, "Cap", V(3.6, 1.2, 3.6), cap, HALL_STONE, M.Cobblestone)
 			if (c + r) % 4 == 0 then
-				lantern(hall, x + 1.7, 5, z, WARM)
+				lantern(hall, x + 1.7, 5, z, HALL_LIGHT, 0.45, 14)
 			end
 		end
 	end
 	local width, length = (cols - 1) * dx + 6, (rows - 1) * dz + 6
 	local centre = V(x0 + (cols - 1) * dx / 2, height + 1.9, z0 + (rows - 1) * dz / 2)
-	part(hall, "Roof", V(width, 1.4, length), CFrame.new(centre), STONE_DARK, M.Cobblestone)
+	part(hall, "Roof", V(width, 1.4, length), CFrame.new(centre), HALL_ROOF, M.Cobblestone)
 	local band = CFrame.new(centre.X, height + 2.9, centre.Z)
-	part(hall, "RoofBand", V(width + 0.8, 0.6, length + 0.8), band, PAINT, M.Concrete)
+	part(hall, "RoofBand", V(width + 0.8, 0.6, length + 0.8), band, HALL_BAND, M.Concrete)
 end
 pillarHall(92, -170, 3, 12, 10, 10, 12)
 
