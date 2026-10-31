@@ -12,7 +12,7 @@ Short plans for each milestone, then how to run them in parallel with separate b
 - **Animations:** the demons are welded parts with no rig, so animate them in code by tweening each part's `Weld.C0` (walk sway, attack lunge, death collapse). Player attack animations need Animation assets: ids go in a new `Config/Animations.luau`.
 - **Sounds:** a new `Config/Sounds.luau` holds the sound ids (hit, swing, dodge, level up, enemy windup).
 
-**Touches:** `EnemyService`, `CombatService`, `Remotes`, `Types` (`EnemyDef`), `Config/Enemies`, new `src/client/Effects.luau`, new `Config/Sounds`, `Config/Animations`.
+**Touches:** `EnemyService`, `CombatService`, `Remotes`, `Types` (`EnemyDef`), `Config/Enemies`, new `src/client/UI/Effects.luau`, new `Config/Sounds`, `Config/Animations`.
 **Needs from you:** pick sounds from the Creator Store (check the licence), upload or pick player animations.
 **Done when:** a Hungry Ghoul visibly winds up, a dodge in the window avoids the hit, and every hit has a sound and a flash.
 
@@ -23,7 +23,7 @@ Short plans for each milestone, then how to run them in parallel with separate b
 **Goal:** the Rage King is a real fight, with phases and a reward.
 
 - **Attack patterns:** a new `Config/Bosses.luau` lists attacks (ground slam ring, charge, summon Hungry Ghouls) and phases (at 66% and 33% health). A new `BossService` runs them. Each attack uses the M1 telegraph.
-- **Boss health bar:** a new remote `BossState`, drawn by a new `src/client/BossBar.luau`.
+- **Boss health bar:** a new remote `BossState`, drawn by a new `src/client/UI/BossBar.luau`.
 - **Rewards:** a burst of gold and XP, and a guaranteed item once M4 items exist.
 - **Arena:** the boss stays in the inner court and resets if you leave or die.
 
@@ -36,9 +36,9 @@ Short plans for each milestone, then how to run them in parallel with separate b
 **Goal:** gold buys things, and things change your stats.
 
 - **Items:** new `Config/Items.luau` with weapons (sword, bow, staff, chakram) and armour. Each has a price and stats (damage multiplier, health, range).
-- **Player data:** add `inventory` and `equipped` to `PlayerData`, bump `GameConfig.DATA_VERSION`, and write the migration (AGENTS.md rule 8).
+- **Player data:** `inventory` and `equipped` already exist in `PlayerData` (Wave 0). Use them; add any new fields with a version bump and migration (AGENTS.md rule 8).
 - **Server logic:** a new `ShopService` buys items (server checks gold and the item id) and an `EquipmentService` applies stats. `CombatService` reads the equipped weapon when it works out damage.
-- **Shop screen:** a new `src/client/Shop.luau`, opened by walking up to a shopkeeper in the map. The shopkeeper is placed by hand in Studio.
+- **Shop screen:** a new `src/client/UI/Shop.luau`, opened by walking up to a shopkeeper in the map. The shopkeeper is placed by hand in Studio.
 
 **Touches:** `Types` (`PlayerData`, new `ItemDef`), `DataService`, `CombatService`, `GameConfig`, `Remotes`, new services, new client `Shop`.
 **Needs from you:** which weapons are cool, names and prices, where the shop stands.
@@ -48,7 +48,7 @@ Short plans for each milestone, then how to run them in parallel with separate b
 **Goal:** more to explore, and more kinds of fight.
 
 - **Zones as data:** a new `Config/Zones.luau` (id, name, level needed, spawn list, entry point). `EnemyService` takes its spawns from the zone, not one fixed list. A new `ZoneService` moves you between zones through tagged portal parts.
-- **Progress:** remember which zones you have unlocked in `PlayerData` (a data version change).
+- **Progress:** use the existing `unlockedZones` in `PlayerData` (zone 1 starts unlocked).
 - **New enemies:** two or three, each with a stats entry in `Config/Enemies.luau` and a look in `Config/EnemyLooks.luau`. Pick folklore creatures with your son (for example a Kuttichathan, the mischievous imp of Kerala folklore). Check each against AGENTS.md rule 10: no gods, semi-divine beings or sacred symbols.
 - **Map:** zone 2 is hand-built in Studio, like zone 1.
 
@@ -76,10 +76,10 @@ Mostly yes, but a few shared files will cause merge conflicts. These are the hot
 Dependencies: M3 needs M1's telegraphs. M3's item reward and M5's unlock both want the data and item changes. The Studio map is one place file, so only one person edits it at a time.
 
 ### Plan: prep, then waves
-**Wave 0: one small prep change** (do it first and alone):
-- Move enemy attacks out of `EnemyService.updateEnemy` into an `EnemyBehaviors` module (melee, projectile, later boss), so M1, M3 and M5 add code instead of editing the same function.
-- Split `HUD.luau` so each feature gets its own file. New screens (shop, boss bar, effects) then don't touch it.
-- Do all `PlayerData` changes (inventory, equipped, unlocked zones) in one data version bump with its migration, so M4 and M5 don't both bump it.
+**Wave 0: one small prep change** (do it first and alone). Done, but not yet playtested in Studio:
+- Enemy attacks now live in `src/server/Services/EnemyBehaviors.luau` (melee, projectile). A new attack style, such as a boss pattern, is a new function there plus `behavior = "name"` on the enemy. `EnemyService` only decides when to attack.
+- `HUD.luau` is a small shell that starts every module in `src/client/UI/`. A new screen (shop, boss bar, effects) is a new file there with a `start(screen)` function. Nothing else changes.
+- `PlayerData` is now version 2 and already has `inventory`, `equipped` and `unlockedZones`, with the migration. M4 and M5 fill these in and must **not** bump the version again unless the shape changes. A saved record from a newer version is never overwritten by older code, so branches can share a test account safely. Check the migration with `tools/check-data-migration.luau`.
 
 **Wave 1: in parallel**
 - M1 combat feel, on branch `m1-combat-feel`

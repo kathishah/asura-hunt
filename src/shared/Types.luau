@@ -34,6 +34,10 @@ export type PlayerData = {
 	statPoints: number,
 	path: PathId,
 	stats: Stats,
+	-- Added in data version 2. Items, equipment and zones are filled in by later milestones.
+	inventory: { [string]: number }, -- item id -> how many
+	equipped: { [string]: string }, -- slot ("weapon", "armor") -> item id
+	unlockedZones: { [string]: boolean }, -- zone id -> true
 }
 
 -- Ellipsoids are rounded blobs that can be stretched to any size, so they make soft, organic

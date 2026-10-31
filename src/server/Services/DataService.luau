@@ -11,6 +11,7 @@ local Types = require(Shared.Types)
 
 local DEFAULT_PATH: Types.PathId = "Yodha"
 local MAX_ATTEMPTS = 3
+local MAX_ITEM_COUNT = 999
 
 -- GetDataStore throws in an unpublished place, so guard it: the game must still run, just unsaved.
 local storeOk, storeResult = pcall(function()
@@ -41,10 +42,15 @@ local function defaultData(): Types.PlayerData
 		statPoints = 0,
 		path = DEFAULT_PATH,
 		stats = { strength = 0, vitality = 0 },
+		inventory = {},
+		equipped = {},
+		unlockedZones = { [GameConfig.FIRST_ZONE] = true },
 	}
 end
 
 -- Fills in anything missing and clamps values so old or odd records never break the game.
+-- This is also the migration: a version 1 record has no inventory, equipped or unlockedZones, so
+-- those start at their defaults and the record is saved as the current version.
 local function reconcile(saved: any): Types.PlayerData
 	local data = defaultData()
 	if type(saved) ~= "table" then
@@ -67,8 +73,36 @@ local function reconcile(saved: any): Types.PlayerData
 		data.stats.vitality = math.max(0, math.floor(tonumber(saved.stats.vitality) or 0))
 	end
 
+	if type(saved.inventory) == "table" then
+		for itemId, count in saved.inventory do
+			local amount = math.clamp(math.floor(tonumber(count) or 0), 0, MAX_ITEM_COUNT)
+			if type(itemId) == "string" and amount > 0 then
+				data.inventory[itemId] = amount
+			end
+		end
+	end
+
+	if type(saved.equipped) == "table" then
+		for slot, itemId in saved.equipped do
+			if type(slot) == "string" and type(itemId) == "string" then
+				data.equipped[slot] = itemId
+			end
+		end
+	end
+
+	if type(saved.unlockedZones) == "table" then
+		for zoneId, unlocked in saved.unlockedZones do
+			if type(zoneId) == "string" and unlocked == true then
+				data.unlockedZones[zoneId] = true
+			end
+		end
+	end
+
 	return data
 end
+
+-- Exposed so a saved record can be checked from the Studio command bar without a DataStore.
+DataService.reconcile = reconcile
 
 local function notify(player: Player)
 	local data = sessions[player]
@@ -100,6 +134,17 @@ local function loadPlayer(player: Player)
 
 	if not player.Parent then
 		return -- left while we were loading
+	end
+
+	-- A record saved by newer code (another branch, or a later build) must not be overwritten by
+	-- older code that would drop the fields it does not know about.
+	local savedVersion = if type(result) == "table" then tonumber(result.version) else nil
+	if success and savedVersion and savedVersion > GameConfig.DATA_VERSION then
+		success = false
+		warn(
+			`[DataService] {player.Name}'s data is version {savedVersion}, newer than this build's `
+				.. `{GameConfig.DATA_VERSION}. Progress will not be saved.`
+		)
 	end
 
 	if success then

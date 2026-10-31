@@ -3,7 +3,10 @@
 
 local GameConfig = {
 	DATASTORE_NAME = "AsuraHuntPlayerData_v1",
-	DATA_VERSION = 1,
+	-- Bump this whenever the saved shape changes, and handle the old shape in DataService.reconcile.
+	-- 2: added inventory, equipped and unlockedZones.
+	DATA_VERSION = 2,
+	FIRST_ZONE = "Zone1",
 	AUTOSAVE_SECONDS = 60,
 
 	MAX_LEVEL = 50,
