@@ -48,7 +48,7 @@ Content guidelines: use creature types from folklore. Do not use gods or goddess
 | --- | --- | --- |
 | M0 | Project skeleton, combat, enemies, saving, HUD | Done (needs first playtest) |
 | M1 | Combat feel: animations, hit effects, sounds, enemy attack telegraphs | Next |
-| M2 | First zone: build the map in Studio, place spawn points, lighting | In progress: starter village built (see `docs/ZONE1_PLAN.md`) |
+| M2 | First zone: build the map in Studio, place spawn points, lighting | In progress: starter fortress-city built (see `docs/ZONE1_PLAN.md`) |
 | M3 | Boss fight: attack patterns, boss health bar, reward drops | |
 | M4 | Gold sink: shop for weapons and armour, equipment stats | |
 | M5 | Second zone and new enemy types | |

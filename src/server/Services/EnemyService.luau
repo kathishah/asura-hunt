@@ -32,18 +32,21 @@ export type EnemyState = {
 	dead: boolean,
 }
 
+-- Placed to match the nested courtyards built by tools/build-zone1.luau: easy fights in the outer
+-- corridors, harder ones further in, the boss in the inner court.
 local DEFAULT_SPAWNS = {
-	{ id = "Pishacha", position = Vector3.new(40, 4, 0) },
-	{ id = "Pishacha", position = Vector3.new(-40, 4, 0) },
-	{ id = "Pishacha", position = Vector3.new(0, 4, 40) },
-	{ id = "Vetala", position = Vector3.new(0, 4, -60) },
-	{ id = "Vetala", position = Vector3.new(60, 4, 60) },
-	{ id = "Chudail", position = Vector3.new(-60, 4, -50) },
-	{ id = "Chudail", position = Vector3.new(30, 4, -100) },
-	{ id = "Daayan", position = Vector3.new(-70, 4, 50) },
-	{ id = "Daayan", position = Vector3.new(90, 4, -40) },
-	{ id = "Rakshasa", position = Vector3.new(-90, 4, 90) },
-	{ id = "Krodha", position = Vector3.new(0, 8, -150) },
+	{ id = "Pishacha", position = Vector3.new(-60, 4, -24) },
+	{ id = "Pishacha", position = Vector3.new(60, 4, -24) },
+	{ id = "Pishacha", position = Vector3.new(100, 4, -52) },
+	{ id = "Chudail", position = Vector3.new(-100, 4, -90) },
+	{ id = "Chudail", position = Vector3.new(-100, 4, -150) },
+	{ id = "Vetala", position = Vector3.new(97, 4, -115) },
+	{ id = "Vetala", position = Vector3.new(97, 4, -165) },
+	{ id = "Daayan", position = Vector3.new(-60, 4, -196) },
+	{ id = "Daayan", position = Vector3.new(60, 4, -196) },
+	{ id = "Rakshasa", position = Vector3.new(0, 4, -54) },
+	{ id = "Rakshasa", position = Vector3.new(0, 4, -166) },
+	{ id = "Krodha", position = Vector3.new(0, 8, -132) },
 }
 
 local EnemyService = {}

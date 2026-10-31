@@ -1,65 +1,78 @@
-# Zone 1: the haunted village
+# Zone 1: the fortress-city
 
-A village on the edge of a forest, at dusk, with an old fort at the far end. Players start in the middle, follow the dirt road north-to-south (towards negative Z) and fight tougher creatures the further they go. The Rage King waits in the fort.
+A ruined walled city at dusk, laid out as rectangles inside rectangles, each with a tall gate tower in the middle of every side. A straight road runs from the outer south gate through every gate to the centre, where the Rage King waits in the inner court.
 
-No temples, shrines or religious symbols (AGENTS.md rule 10). The fort is a plain stone fort.
+The plan is inspired by the layout of the great South Indian temple cities. It is an original place. It has no shrine, idols, deities or sacred symbols, and it does not copy any real building (AGENTS.md rule 10).
 
 ## Map sketch
 
-Top of the sketch is far (negative Z). Each unit is about 20 studs.
+Top of the sketch is far (negative Z). The centre of the compound is (0, -110).
 
 ```
-                      Z = -175   [ tower ] [  gate  ] [ tower ]
-                                 old fort wall, broken lintel
-                      Z = -150          ( ARENA )  Rage King (Krodha)
-                      Z = -125          road lanterns
-   Chudail grove      Z = -100   (30,-100) dead trees + ruined hut
-                      Z =  -66   well, scarecrow
- Banyan tree          Z =  -60   Shroud Walker (0,-60)
- Chudail (-60,-50)    Z =  -50
-                                 Night Witch (90,-40)  ruined hut
-   Hungry Ghoul (-40,0)  ----- start (0,0) -----  Hungry Ghoul (40,0)
-   huts and well                                  huts and well
-   Hungry Ghoul (0,40)
-   Night Witch (-70,50)   witch corner, purple lanterns
-                      Z =  60   Shroud Walker (60,60)  ruined hut
-   Tusked Brute (-90,90)  stony hollow
+            Z=-210   +---------------- outer wall ---------------+
+                     |  N corridor: Night Witches, huts          |
+            Z=-182   |  +-------------- middle wall -----------+ |
+                     |  |  N inner corridor: Tusked Brute (2nd)  | |
+            Z=-150   |  |  +----------- inner wall ---------+  | |
+  W corridor         |  |  |                                |  | |  E corridor
+  market, banyan,    |  |  |   INNER COURT: Rage King       |  | |  pillar hall,
+  Backfoot Hags      |  |  |   (0,-132), water tank (0,-98) |  | |  Shroud Walkers
+            Z=-70    |  |  +---------------- gate ----------+  | |
+                     |  |  S inner corridor: Tusked Brute (1st)  | |
+            Z=-38    |  +---------------- gate ---------------+ |
+                     |  S corridor: Hungry Ghouls, wells         |
+            Z=-10    +---------------- gate -------------------+
+            Z=0                      START (0,0)
 ```
 
-Hungry Ghouls are the first fights because they are closest to the start. The road heads towards the fort, past the Shroud Walker and the grove.
+Gate towers stand in the middle of every wall. Walls: outer x -120..120, middle x -84..84, inner x -50..50.
+
+## Where the enemies live
+
+The positions are `DEFAULT_SPAWNS` in `EnemyService`.
+
+| Place | Enemy | Spawns (x, z) |
+| --- | --- | --- |
+| South corridor and east end | Hungry Ghoul | (-60,-24), (60,-24), (100,-52) |
+| West corridor, under the banyan | Backfoot Hag | (-100,-90), (-100,-150) |
+| East corridor, in the pillar hall | Shroud Walker | (97,-115), (97,-165) |
+| North corridor, by the huts | Night Witch | (-60,-196), (60,-196) |
+| Inner corridors, in front of the inner gates | Tusked Brute | (0,-54), (0,-166) |
+| Inner court | Rage King | (0,-132) |
+
+Players meet easy enemies first, then spread out to the side corridors, then face the Brutes at the inner gates before the boss.
 
 ## What is built
 
-`tools/build-zone1.luau` builds a starter version of everything below in Workspace > Zone1:
+`tools/build-zone1.luau` builds a starter version of everything below in Workspace > Zone1 (about 1,100 pieces):
 
-| Landmark | Where | Notes |
-| --- | --- | --- |
-| Dirt road | from the start down to the fort | Lanterns glow along it |
-| Round mud huts | around the start | Stepped thatch roofs, lantern at the door |
-| Ruined huts | (68,68), (100,-50), (18,-112) | Just low walls and rubble |
-| Wells | (14,-14), (6,-66) | |
-| Great banyan tree | (-68,-58) | The Backfoot Hag lives under it |
-| Dead tree grove | around (30,-100) | Second Backfoot Hag |
-| Witch corner | around (-80,55) | Leaning hut, purple lanterns, herb poles |
-| Stony hollow | around (-90,90) | Boulders for the Tusked Brute |
-| Scarecrow | (-10,-64) | Near the Shroud Walker |
-| Old fort | z = -125 to -175 | Arena floor, walls, towers, broken gate |
+- Three nested walls with gaps for gates, capped with a ledge and blocks
+- Twelve stepped gate towers with painted bands, window slots and barrel roofs: tall for the outer ring, smaller further in
+- A paved axis road from the start to the centre
+- A pillared hall (36 pillars with a roof) in the east corridor
+- A ruined market and a great banyan tree in the west corridor
+- Round mud huts and purple lanterns in the north corridor
+- Two wells and lanterns by the entrance
+- A raised water tank with green water-lily pads in the inner court, and pillars either side
+- Dead trees and rocks outside the walls, and rubble inside
 
 The lighting is not in the script. It lives in `default.project.json` (dusk, haze, bloom) and syncs with Rojo.
 
 ## Things to decide and build by hand
 
-- A name for the village and the fort
-- Better huts: windows, doors, a roof you like more
-- A river or a field? Props that tell a story (a cart, broken fences, washing lines)
+- A name for the city and the great gate towers
+- Better details: window shapes, carved patterns (keep it free of sacred symbols), banners
+- Towers you can climb? A rooftop fight?
+- Make the pillar hall a bit less orange (fewer or dimmer lanterns)
 - Sounds: night crickets, wind, a distant bell (check Roblox's audio rules before publishing)
 - A sky you like. The default sky is used for now
 - Spawn points you place yourself (tag a Part `EnemySpawn` with an `EnemyId` attribute). Once any exist, the built-in positions are ignored
 
 ## Playtest checklist
 
-1. Spawn in the middle and look around: is it too dark to see enemies?
-2. Walk the road: can you reach the fort without getting stuck?
-3. Does each enemy appear where you expect, not inside a hut or wall?
-4. Does the Rage King fight stay inside the arena?
-5. Does the frame rate stay smooth with the village and all enemies in view?
+1. Spawn at the start and look down the road: can you see the gates in a line?
+2. Walk to the centre: do you pass the Brute before the boss?
+3. Does each enemy appear where the table above says, not inside a wall or pillar?
+4. Is the east pillar hall too orange or too dark to fight in?
+5. Does the Rage King fight stay inside the inner court?
+6. Does the frame rate stay smooth with the walls, towers and enemies in view?
