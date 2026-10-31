@@ -55,7 +55,7 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	local gui = Instance.new("BillboardGui")
 	gui.Name = "Nameplate"
 	gui.Adornee = root
-	gui.Size = UDim2.fromOffset(180, 32)
+	gui.Size = UDim2.fromOffset(200, 42)
 	-- Sit above the tallest part (horns, flames), not just the hitbox.
 	local boxCFrame, boxSize = model:GetBoundingBox()
 	local top = math.max(def.size.Y / 2, boxCFrame.Position.Y + boxSize.Y / 2 - root.Position.Y)
@@ -64,13 +64,25 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	gui.MaxDistance = 80
 
 	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1, 1)
+	label.Size = UDim2.fromScale(1, 0.6)
 	label.BackgroundTransparency = 1
 	label.TextColor3 = if def.isBoss then Color3.fromRGB(255, 190, 80) else Color3.new(1, 1, 1)
 	label.TextStrokeTransparency = 0.4
 	label.Font = Enum.Font.GothamBold
 	label.TextSize = 14
 	label.Parent = gui
+
+	-- The folklore name, small and quiet, so players pick it up over time.
+	local subtitle = Instance.new("TextLabel")
+	subtitle.Size = UDim2.fromScale(1, 0.4)
+	subtitle.Position = UDim2.fromScale(0, 0.6)
+	subtitle.BackgroundTransparency = 1
+	subtitle.Text = def.folkloreName
+	subtitle.TextColor3 = Color3.fromRGB(200, 200, 210)
+	subtitle.TextStrokeTransparency = 0.5
+	subtitle.Font = Enum.Font.GothamMedium
+	subtitle.TextSize = 11
+	subtitle.Parent = gui
 
 	local function refresh()
 		label.Text =

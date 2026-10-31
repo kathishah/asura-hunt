@@ -56,7 +56,9 @@ export type BodyPart = {
 
 export type EnemyDef = {
 	id: string,
+	-- Easy English name shown to players, with the folklore name as a small subtitle.
 	displayName: string,
+	folkloreName: string,
 	maxHealth: number,
 	damage: number,
 	walkSpeed: number,
