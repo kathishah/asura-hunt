@@ -14,12 +14,15 @@ local BodyBuilder = require(Shared.BodyBuilder)
 local Enemies = require(Shared.Config.Enemies)
 local EnemyLooks = require(Shared.Config.EnemyLooks)
 local Types = require(Shared.Types)
+local AttackTiming = require(script.Parent.AttackTiming)
 local EnemyBehaviors = require(script.Parent.EnemyBehaviors)
 
 local SPAWN_TAG = "EnemySpawn"
 local AI_TICK_SECONDS = 0.25
 local LEASH_DISTANCE = 120
 local HOME_RADIUS = 6
+-- A telegraphed attack still lands if the target is just outside normal reach when it ends.
+local WINDUP_REACH = 1.15
 
 export type EnemyState = {
 	def: Types.EnemyDef,
@@ -28,6 +31,7 @@ export type EnemyState = {
 	root: BasePart,
 	spawnPosition: Vector3,
 	nextAttackAt: number,
+	windupEndsAt: number?,
 	lastAttacker: Player?,
 	dead: boolean,
 }
@@ -201,6 +205,7 @@ function EnemyService.spawn(enemyId: string, position: Vector3)
 		root = root,
 		spawnPosition = position,
 		nextAttackAt = 0,
+		windupEndsAt = nil,
 		lastAttacker = nil,
 		dead = false,
 	}
@@ -284,6 +289,22 @@ local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
 	return bestPlayer, bestHumanoid, bestRoot
 end
 
+-- A red glow on an enemy that is winding up to strike, so the player can see it coming.
+-- Uses Roblox's Highlight; check https://create.roblox.com/docs/reference/engine/classes/Highlight
+local function setTelegraph(state: EnemyState, on: boolean)
+	local existing = state.model:FindFirstChild("Telegraph")
+	if on and not existing then
+		local glow = Instance.new("Highlight")
+		glow.Name = "Telegraph"
+		glow.FillColor = Color3.fromRGB(255, 60, 40)
+		glow.FillTransparency = 0.35
+		glow.OutlineColor = Color3.fromRGB(255, 200, 80)
+		glow.Parent = state.model
+	elseif not on and existing then
+		existing:Destroy()
+	end
+end
+
 local function updateEnemy(state: EnemyState)
 	if state.dead or state.humanoid.Health <= 0 then
 		return
@@ -291,7 +312,11 @@ local function updateEnemy(state: EnemyState)
 
 	local player, targetHumanoid, targetRoot = findTarget(state)
 	if not player or not targetHumanoid or not targetRoot then
-		-- No target: walk home and recover.
+		-- No target: drop any half-finished attack, then walk home and recover.
+		if state.windupEndsAt then
+			state.windupEndsAt = nil
+			setTelegraph(state, false)
+		end
 		local homeDistance = (state.root.Position - state.spawnPosition).Magnitude
 		if homeDistance > HOME_RADIUS then
 			state.humanoid:MoveTo(state.spawnPosition)
@@ -302,14 +327,28 @@ local function updateEnemy(state: EnemyState)
 	end
 
 	local distance = (targetRoot.Position - state.root.Position).Magnitude
-	if distance > state.def.attackRange then
+	local winding = state.windupEndsAt ~= nil
+	local reach = state.def.attackRange * (if winding then WINDUP_REACH else 1)
+	local inReach = distance <= reach
+	if not inReach and not winding then
 		state.humanoid:MoveTo(targetRoot.Position)
 		return
 	end
 
-	local now = os.clock()
-	if now >= state.nextAttackAt then
-		state.nextAttackAt = now + state.def.attackCooldown
+	local action = AttackTiming.update(
+		state,
+		os.clock(),
+		inReach,
+		state.def.attackWindup,
+		state.def.attackCooldown
+	)
+	if action == "windup" then
+		state.humanoid:MoveTo(state.root.Position) -- stand still while telegraphing
+		setTelegraph(state, true)
+	elseif action == "cancel" then
+		setTelegraph(state, false)
+	elseif action == "strike" then
+		setTelegraph(state, false)
 		local target: EnemyBehaviors.Target = {
 			player = player,
 			humanoid = targetHumanoid,

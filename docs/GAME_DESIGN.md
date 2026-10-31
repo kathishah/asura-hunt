@@ -49,7 +49,7 @@ Plans for each milestone, and how to build them in parallel, are in `docs/ROADMA
 | Milestone | Goal | Status |
 | --- | --- | --- |
 | M0 | Project skeleton, combat, enemies, saving, HUD | Done (needs first playtest) |
-| M1 | Combat feel: animations, hit effects, sounds, enemy attack telegraphs | Next |
+| M1 | Combat feel: animations, hit effects, sounds, enemy attack telegraphs | Telegraphs built on branch `m1-combat-feel` (needs a Studio playtest); hit effects, animations and sounds still to do |
 | M2 | First zone: build the map in Studio, place spawn points, lighting | In progress: starter fortress-city built (see `docs/ZONE1_PLAN.md`) |
 | M3 | Boss fight: attack patterns, boss health bar, reward drops | |
 | M4 | Gold sink: shop for weapons and armour, equipment stats | |
