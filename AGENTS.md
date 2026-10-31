@@ -12,7 +12,20 @@ Working title: **Asura Hunt** (can be renamed). Full design and roadmap: `docs/G
 
 - Language: **Luau** with `--!strict` at the top of every file.
 - Code lives in plain `.luau` files and is synced into Roblox Studio with **Rojo** (`default.project.json`).
-- The 3D world (map, models, lighting, UI layout) is built by hand in Studio. Rojo only syncs scripts, so never try to generate map geometry as code unless asked.
+- Lighting and UI layout can be set in `default.project.json` and code. The 3D world (map and models) can be generated as code too, and the human can still change anything by hand in Studio.
+
+### Building the map as code
+
+Rojo only syncs scripts, not parts, so map builders are scripts in `tools/` that you paste into Studio's command bar (edit mode, not Play). `tools/build-zone1.luau` is the pattern to follow.
+
+- **Put it in `tools/`, not `src/`.** It must not run in the game. Keep it as a plain script with no `require`s.
+- **Make it re-runnable.** It deletes and rebuilds only its own folder in Workspace (for example `Workspace.Zone1`) and sets `Parent` last, so running it twice never doubles the map. Studio shows a "Dangerous Command" warning because of the delete; Continue is expected.
+- **Name things and group them in models** (`OuterWall`, `PillarHall`, ...), so the human can find, move, recolour or delete pieces by hand.
+- **Keep the colours and sizes as named constants at the top**, so a restyle is a one-line change.
+- **Hand edits are lost when a builder is re-run.** Before re-running one over a map the human has edited, say so and ask. For a small change, apply it to the open map and update the builder to match.
+- **The map follows rule 10**, like everything else: no deities, idols, sacred symbols or sacred places as scenery.
+- **Spawn points and special spots are plain parts** with tags and attributes (see `EnemyService`), so they can be moved by hand.
+- Rojo is told not to delete what a builder makes: `Workspace` and `Lighting` are marked `$ignoreUnknownInstances` in `default.project.json`.
 
 | Folder | Becomes in Studio | Purpose |
 | --- | --- | --- |
