@@ -422,6 +422,85 @@ local function chudail(): { BodyPart }
 	return parts
 end
 
+-- Daayan: a witch from village folk tales. Hunched and gaunt in a ragged purple shawl, with wild
+-- grey hair, a hooked nose, glowing violet eyes and a gnarled staff topped with a curse-orb.
+-- Her free hand is raised, casting.
+local function daayan(): { BodyPart }
+	local skin = Color3.fromRGB(150, 128, 112)
+	local skinDark = Color3.fromRGB(104, 86, 78)
+	local shawl = Color3.fromRGB(78, 44, 100)
+	local shawlDark = Color3.fromRGB(46, 28, 64)
+	local hair = Color3.fromRGB(196, 196, 204)
+	local hollow = Color3.fromRGB(28, 18, 34)
+	local wood = Color3.fromRGB(82, 58, 40)
+	local glow = Color3.fromRGB(170, 90, 255)
+	local eye = Color3.fromRGB(200, 130, 255)
+
+	local parts: { BodyPart } = {}
+	-- Robe and shawl, hunched forward
+	blob(parts, "Skirt", shawlDark, v(2.4, 3.4, 2), v(0, -1.2, 0.05), nil, CLOTH)
+	blob(parts, "Flare", shawl, v(2.8, 1.2, 2.2), v(0, -2.2, 0.05), nil, CLOTH)
+	blob(parts, "Torso", shawl, v(1.8, 2.2, 1.3), v(0, 0.9, 0.1), v(-12, 0, 0), CLOTH)
+	blob(parts, "Hump", shawlDark, v(1.3, 1.3, 1.1), v(0, 1.7, 0.5), v(-20, 0, 0), CLOTH)
+	blob(parts, "Shawl", shawl, v(2.5, 0.7, 1.7), v(0, 1.95, 0), nil, CLOTH)
+	blob(parts, "ShawlTail", shawlDark, v(1.4, 2.6, 0.15), v(0, 0.4, 0.95), nil, CLOTH)
+	blobPair(parts, "Foot", skinDark, v(0.5, 0.2, 0.9), v(0.6, -2.85, -0.3))
+	-- Head: hooked nose, glowing eyes, a crooked grin and wild hair
+	limb(parts, "Neck", skin, v(0, 2, 0), v(0, 2.45, -0.5), 0.35)
+	blob(parts, "HairBack", hair, v(1.5, 1.6, 0.6), v(0, 2.9, -0.1))
+	blob(parts, "Head", skin, v(1.1, 1.35, 1.15), v(0, 2.85, -0.65))
+	blob(parts, "Chin", skin, v(0.45, 0.55, 0.5), v(0, 2.3, -1))
+	blobPair(parts, "Brow", skinDark, v(0.5, 0.15, 0.25), v(0.28, 3.15, -1.15), v(0, 0, 15))
+	blobPair(parts, "Socket", hollow, v(0.38, 0.28, 0.2), v(0.27, 2.95, -1.18))
+	blobPair(parts, "Eye", eye, v(0.22, 0.22, 0.16), v(0.27, 2.95, -1.25), nil, NEON)
+	strand(parts, "Nose", skin, v(0, 2.8, -1.2), v(0, -0.2, -1), v(0, -1, 0), {
+		segments = 3,
+		step = 0.22,
+		from = 0.24,
+		to = 0.1,
+		bend = 30,
+	})
+	blob(parts, "Mouth", hollow, v(0.6, 0.15, 0.15), v(0, 2.5, -1.2))
+	blobPair(parts, "Tooth", BONE, v(0.08, 0.2, 0.08), v(0.12, 2.43, -1.27))
+	blobPair(parts, "Wart", skinDark, v(0.1, 0.1, 0.1), v(0.4, 2.65, -1.1))
+	for index = -4, 4 do
+		strand(
+			parts,
+			`Hair{index}`,
+			hair,
+			v(index * 0.14, 3.45, -0.5),
+			v(index * 0.4, 0.9, 0.3),
+			v(0, -1, 0.1),
+			{ segments = 5, step = 0.55, from = 0.22, to = 0.05, bend = 28 }
+		)
+	end
+	blobPair(parts, "Shoulder", shawl, v(0.6, 0.6, 0.6), v(0.95, 1.8, 0.1))
+	-- Right arm holds the staff
+	limb(parts, "UpperArmR", skin, v(0.95, 1.8, 0.1), v(1.35, 0.8, -0.3), 0.28)
+	limb(parts, "ForearmR", skin, v(1.35, 0.8, -0.3), v(1.5, 0.85, -0.95), 0.22)
+	blob(parts, "HandR", skinDark, v(0.4, 0.4, 0.4), v(1.5, 0.9, -1))
+	limb(parts, "Staff", wood, v(1.5, -2.85, -0.95), v(1.6, 3.7, -1.1), 0.24)
+	blob(parts, "StaffKnot", wood, v(0.42, 0.42, 0.42), v(1.55, 1.9, -1.05))
+	local top = v(1.6, 3.6, -1.1)
+	local sides = { v(1, 0, 0), v(-1, 0, 0), v(0, 0, 1), v(0, 0, -1) }
+	for index, side in sides do
+		local spec = { segments = 3, step = 0.3, from = 0.13, to = 0.07, bend = 30 }
+		strand(parts, `Prong{index}`, wood, top, v(side.X * 0.6, 1, side.Z * 0.6), -side, spec)
+	end
+	blob(parts, "Orb", glow, v(0.9, 0.9, 0.9), v(1.6, 4.3, -1.1), nil, NEON)
+	-- Left hand raised, a curse gathering above the fingers
+	limb(parts, "UpperArmL", skin, v(-0.95, 1.8, 0.1), v(-1.5, 1.4, -0.5), 0.26)
+	limb(parts, "ForearmL", skin, v(-1.5, 1.4, -0.5), v(-1.3, 2.3, -1.2), 0.2)
+	blob(parts, "HandL", skinDark, v(0.4, 0.45, 0.3), v(-1.3, 2.5, -1.3))
+	for finger = 1, 4 do
+		local spread = (finger - 2.5) * 0.12
+		local from = v(-1.3 + spread, 2.7, -1.3)
+		limb(parts, `Finger{finger}`, skinDark, from, v(-1.3 + spread * 1.8, 3.3, -1.5), 0.07)
+	end
+	blob(parts, "CastGlow", glow, v(0.5, 0.5, 0.5), v(-1.3, 3, -1.8), nil, NEON)
+	return parts
+end
+
 type RakshasaPalette = {
 	skin: Color3,
 	light: Color3,
@@ -596,6 +675,7 @@ local EnemyLooks: { [string]: { BodyPart } } = {
 	Pishacha = pishacha(),
 	Vetala = vetala(),
 	Chudail = chudail(),
+	Daayan = daayan(),
 	Rakshasa = rakshasa({
 		skin = Color3.fromRGB(150, 46, 42),
 		light = Color3.fromRGB(180, 70, 58),

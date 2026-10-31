@@ -54,6 +54,15 @@ export type BodyPart = {
 	material: Enum.Material?,
 }
 
+-- A ranged enemy casts a glowing bolt instead of striking in melee. It flies straight at where the
+-- target stood when cast, so a moving or dodging player can avoid it.
+export type ProjectileDef = {
+	speed: number, -- studs per second
+	size: number, -- visual diameter in studs
+	hitRadius: number, -- how close to the target's centre counts as a hit
+	color: Color3,
+}
+
 export type EnemyDef = {
 	id: string,
 	-- Easy English name shown to players, with the folklore name as a small subtitle.
@@ -71,6 +80,7 @@ export type EnemyDef = {
 	size: Vector3,
 	color: Color3,
 	isBoss: boolean?,
+	projectile: ProjectileDef?,
 }
 
 return {}
