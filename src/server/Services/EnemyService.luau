@@ -7,7 +7,6 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -15,6 +14,7 @@ local BodyBuilder = require(Shared.BodyBuilder)
 local Enemies = require(Shared.Config.Enemies)
 local EnemyLooks = require(Shared.Config.EnemyLooks)
 local Types = require(Shared.Types)
+local EnemyBehaviors = require(script.Parent.EnemyBehaviors)
 
 local SPAWN_TAG = "EnemySpawn"
 local AI_TICK_SECONDS = 0.25
@@ -284,59 +284,6 @@ local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
 	return bestPlayer, bestHumanoid, bestRoot
 end
 
--- Fires a glowing bolt at where the target is now. Damage lands on arrival, so the player can
--- dodge by moving or by using the dodge roll's invulnerability.
-local function castProjectile(
-	state: EnemyState,
-	player: Player,
-	targetHumanoid: Humanoid,
-	targetRoot: BasePart
-)
-	local config = state.def.projectile
-	if not config then
-		return
-	end
-
-	local origin = state.root.Position + Vector3.new(0, state.def.size.Y * 0.2, 0)
-	local direction = (targetRoot.Position - origin).Unit
-	-- Enemies face -Z, so look at the target before casting.
-	local flat = Vector3.new(direction.X, 0, direction.Z)
-	if flat.Magnitude > 0.01 then
-		state.root.CFrame = CFrame.lookAt(state.root.Position, state.root.Position + flat)
-	end
-
-	local bolt = Instance.new("Part")
-	bolt.Name = "CurseBolt"
-	bolt.Shape = Enum.PartType.Ball
-	bolt.Size = Vector3.one * config.size
-	bolt.Color = config.color
-	bolt.Material = Enum.Material.Neon
-	bolt.Anchored = true
-	bolt.CanCollide = false
-	bolt.CanTouch = false
-	bolt.CanQuery = false
-	bolt.CFrame = CFrame.new(origin)
-	bolt.Parent = enemiesFolder
-
-	task.spawn(function()
-		local maxTravel = state.def.attackRange * 1.5
-		local travelled = 0
-		while travelled < maxTravel do
-			local step = config.speed * RunService.Heartbeat:Wait()
-			travelled += step
-			bolt.Position += direction * step
-			local closeEnough = (targetRoot.Position - bolt.Position).Magnitude <= config.hitRadius
-			if closeEnough and targetHumanoid.Health > 0 then
-				if not player:GetAttribute("Invulnerable") then
-					targetHumanoid:TakeDamage(state.def.damage)
-				end
-				break
-			end
-		end
-		bolt:Destroy()
-	end)
-end
-
 local function updateEnemy(state: EnemyState)
 	if state.dead or state.humanoid.Health <= 0 then
 		return
@@ -363,12 +310,12 @@ local function updateEnemy(state: EnemyState)
 	local now = os.clock()
 	if now >= state.nextAttackAt then
 		state.nextAttackAt = now + state.def.attackCooldown
-		if state.def.projectile then
-			castProjectile(state, player, targetHumanoid, targetRoot)
-		-- Dodge i-frames: CombatService sets this attribute on the player.
-		elseif not player:GetAttribute("Invulnerable") then
-			targetHumanoid:TakeDamage(state.def.damage)
-		end
+		local target: EnemyBehaviors.Target = {
+			player = player,
+			humanoid = targetHumanoid,
+			root = targetRoot,
+		}
+		EnemyBehaviors.forDef(state.def)(state, target, enemiesFolder)
 	end
 end
 

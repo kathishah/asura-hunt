@@ -81,6 +81,9 @@ export type EnemyDef = {
 	color: Color3,
 	isBoss: boolean?,
 	projectile: ProjectileDef?,
+	-- Which attack behaviour to use (see EnemyBehaviors). Left out, it is "projectile" when the
+	-- enemy has a projectile and "melee" otherwise.
+	behavior: string?,
 }
 
 return {}
