@@ -270,27 +270,28 @@ local function pishacha(): { BodyPart }
 		to = 0.07,
 		bend = 20,
 	})
-	-- Matted hair rising from the skull and drooping
-	local hairStrands = {
-		{ -0.5, -0.3, -0.6, 0.3 },
-		{ -0.25, -0.5, -0.2, 0.2 },
-		{ 0, -0.6, 0, 0.3 },
-		{ 0.25, -0.5, 0.2, 0.2 },
-		{ 0.5, -0.3, 0.6, 0.3 },
-		{ -0.35, 0, -0.4, 0.8 },
-		{ 0.35, 0, 0.4, 0.8 },
-	}
-	for index, s in hairStrands do
-		strand(
-			parts,
-			`Hair{index}`,
-			hair,
-			v(s[1], 3, -0.85 + s[2]),
-			v(s[3], 1, s[4]),
-			v(0, -1, 0.2),
-			{ segments = 4, step = 0.5, from = 0.2, to = 0.05, bend = 28 }
-		)
-	end
+	-- Bald on top, with thin lank wisps hanging from the sides and back of the head
+	strandPair(parts, "SideWisp", hair, v(0.55, 2.7, -0.6), v(0.3, -0.2, 0.3), v(0, -1, 0.1), {
+		segments = 6,
+		step = 0.5,
+		from = 0.13,
+		to = 0.04,
+		bend = 25,
+	})
+	strandPair(parts, "NapeWisp", hair, v(0.25, 2.55, -0.25), v(0.1, -0.3, 0.5), v(0, -1, 0.1), {
+		segments = 6,
+		step = 0.5,
+		from = 0.13,
+		to = 0.04,
+		bend = 25,
+	})
+	strand(parts, "MidWisp", hair, v(0, 2.6, -0.2), v(0, -0.3, 0.5), v(0, -1, 0.1), {
+		segments = 7,
+		step = 0.5,
+		from = 0.14,
+		to = 0.04,
+		bend = 25,
+	})
 	-- Long thin arms with claws
 	blobPair(parts, "Shoulder", skin, v(0.6, 0.6, 0.6), v(0.85, 1.5, -0.4))
 	limbPair(parts, "UpperArm", skin, v(0.85, 1.5, -0.4), v(1, 0.5, -0.75), 0.4)
@@ -316,7 +317,6 @@ local function vetala(): { BodyPart }
 	local rib = Color3.fromRGB(190, 196, 208)
 	local shroud = Color3.fromRGB(214, 208, 192)
 	local shroudDark = Color3.fromRGB(160, 154, 140)
-	local hair = Color3.fromRGB(24, 20, 30)
 	local hollow = Color3.fromRGB(26, 20, 32)
 	local eye = Color3.fromRGB(150, 255, 200)
 
@@ -360,16 +360,28 @@ local function vetala(): { BodyPart }
 	for tooth = -2, 2 do
 		blob(parts, `Tooth{tooth}`, BONE, v(0.07, 0.22, 0.07), v(tooth * 0.14, 2.62, -1.15))
 	end
-	-- Wild hair standing up and falling over
-	for index = -3, 3 do
+	-- Long lank ash-white hair: hanging forward over one side of the face, and down the back
+	local ash = Color3.fromRGB(206, 206, 220)
+	for index = 0, 5 do
 		strand(
 			parts,
-			`Hair{index}`,
-			hair,
-			v(index * 0.13, 3.8, -0.6 + (index % 2) * 0.2),
-			v(index * 0.2, 1, -0.1),
-			v(0, -1, 0),
-			{ segments = 4, step = 0.5, from = 0.16, to = 0.04, bend = 24 }
+			`HairFront{index}`,
+			ash,
+			v(-0.55 + index * 0.12, 3.7, -0.95),
+			v(-0.15, -0.4, -0.2),
+			v(0, -1, 0.05),
+			{ segments = 8, step = 0.45, from = 0.2, to = 0.05, bend = 10 }
+		)
+	end
+	for index = -2, 2 do
+		strand(
+			parts,
+			`HairBack{index}`,
+			ash,
+			v(index * 0.2, 3.6, -0.3),
+			v(0, -0.2, 0.35),
+			v(0, -1, -0.1),
+			{ segments = 7, step = 0.5, from = 0.2, to = 0.05, bend = 10 }
 		)
 	end
 	-- Very long arms and fingers
@@ -582,7 +594,7 @@ local METAL = Enum.Material.Metal
 
 -- The body shared by the Tusked Brute and the Rage King: a huge, fierce demon with a heavy brow,
 -- glowing eyes, boar-like tusks and a thick moustache. Each wears different armor on top.
-local function ogre(p: OgrePalette, withHair: boolean, withHorns: boolean): { BodyPart }
+local function ogre(p: OgrePalette, withHorns: boolean): { BodyPart }
 	local parts: { BodyPart } = {}
 	-- Torso: broad shoulders tapering to the waist (armor covers most of it)
 	blob(parts, "Chest", p.skin, v(3.2, 2.6, 1.8), v(0, 1.3, 0), v(-6, 0, 0))
@@ -632,20 +644,6 @@ local function ogre(p: OgrePalette, withHair: boolean, withHorns: boolean): { Bo
 			bend = 22,
 		})
 	end
-	if withHair then
-		-- Hair swept back from the crown
-		for index = -3, 3 do
-			strand(
-				parts,
-				`Hair{index}`,
-				p.hair,
-				v(index * 0.22, 4.35, -0.1),
-				v(index * 0.08, 0.5, 1),
-				v(0, -1, 0),
-				{ segments = 4, step = 0.5, from = 0.24, to = 0.06, bend = 30 }
-			)
-		end
-	end
 	-- Waist cloth and legs
 	blob(parts, "Cloth", p.cloth, v(2.5, 1.3, 1.8), v(0, -2, 0), nil, CLOTH)
 	blob(parts, "ClothFront", p.cloth, v(1.5, 1.8, 0.2), v(0, -2.7, -0.9), nil, CLOTH)
@@ -673,8 +671,29 @@ local function rakshasa(): { BodyPart }
 		hair = Color3.fromRGB(20, 18, 30),
 		glow = Color3.fromRGB(255, 205, 70),
 	}
-	local parts = ogre(p, true, true)
+	local parts = ogre(p, true)
 	local tilt = v(-6, 0, 0)
+	-- Shaved head, a thick braid down the back, and a bristly beard
+	strand(parts, "Braid", p.hair, v(0, 3.75, 0.5), v(0, 0.1, 1), v(0, -1, 0), {
+		segments = 7,
+		step = 0.55,
+		from = 0.5,
+		to = 0.25,
+		bend = 28,
+	})
+	for index, x in { -0.3, -0.1, 0.1, 0.3 } do
+		local length = if index == 2 or index == 3 then 0.5 else 0.4
+		local spec = { segments = 3, step = length, from = 0.22, to = 0.06, bend = 20 }
+		strand(
+			parts,
+			`Beard{index}`,
+			p.hair,
+			v(x, 2.75, -0.95),
+			v(x * 0.3, -1, -0.25),
+			v(0, -1, -0.2),
+			spec
+		)
+	end
 	-- Chest guard: overlapping leather bands that follow the curve of the chest
 	for band = 1, 5 do
 		local y = 0.5 + (band - 1) * 0.45
@@ -742,7 +761,7 @@ local function krodha(): { BodyPart }
 		hair = Color3.fromRGB(30, 12, 12),
 		glow = Color3.fromRGB(255, 235, 120),
 	}
-	local parts = ogre(p, false, false)
+	local parts = ogre(p, false)
 	local tilt = v(-6, 0, 0)
 	-- One big breastplate with a gold border and chevron, and a gold collar
 	plate(parts, "BreastBorder", p.trim, v(2.6, 1.9, 0.3), v(0, 1.5, -0.74), tilt, METAL)
