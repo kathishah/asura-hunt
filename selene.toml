@@ -1,0 +1,4 @@
+std = "roblox"
+
+[lints]
+# Keep the default lint set. Loosen individual lints here only with a comment explaining why.

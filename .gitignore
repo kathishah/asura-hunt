@@ -1,0 +1,13 @@
+# Build output
+build/
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxlx.lock
+
+# Generated tooling files
+sourcemap.json
+roblox.yml
+
+# macOS
+.DS_Store
