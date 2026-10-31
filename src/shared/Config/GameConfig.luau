@@ -26,6 +26,8 @@ local GameConfig = {
 		baseDamage = 10,
 		finisherMultiplier = 1.8, -- last hit of the combo
 		maxTargetsPerHit = 5,
+		-- A swing turns you toward the nearest enemy within this many studs if nobody is in front.
+		aimAssistRange = 16,
 		dodgeCooldown = 1.5,
 		dodgeInvulnerableSeconds = 0.35,
 		dodgeDashSpeed = 70,

@@ -90,7 +90,8 @@ local Enemies: { [string]: Types.EnemyDef } = {
 		maxHealth = 320,
 		damage = 22,
 		walkSpeed = 15,
-		aggroRange = 55,
+		-- Short, so the Brute at the south gate does not run out and catch players at the start.
+		aggroRange = 30,
 		attackRange = 6,
 		attackCooldown = 1.3,
 		attackWindup = 0.7,

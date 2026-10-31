@@ -11,6 +11,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BodyBuilder = require(Shared.BodyBuilder)
+local Effects = require(Shared.Config.Effects)
 local Enemies = require(Shared.Config.Enemies)
 local EnemyLooks = require(Shared.Config.EnemyLooks)
 local Types = require(Shared.Types)
@@ -250,12 +251,30 @@ function EnemyService.getEnemiesInCone(
 	return result
 end
 
+-- A quick white flash so you can see that a hit landed.
+local function flashHit(state: EnemyState)
+	if state.model:FindFirstChild("HitFlash") then
+		return
+	end
+	local config = Effects.HIT_FLASH
+	local flash = Instance.new("Highlight")
+	flash.Name = "HitFlash"
+	flash.FillColor = config.color
+	flash.FillTransparency = 0.25
+	flash.OutlineTransparency = 1
+	flash.Parent = state.model
+	task.delay(config.seconds, function()
+		flash:Destroy()
+	end)
+end
+
 function EnemyService.damage(state: EnemyState, amount: number, attacker: Player)
 	if state.dead then
 		return
 	end
 	state.lastAttacker = attacker
 	state.humanoid:TakeDamage(amount)
+	flashHit(state)
 end
 
 local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
