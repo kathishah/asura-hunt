@@ -110,6 +110,62 @@ local function limbPair(
 	limb(list, name .. "L", color, flip(from), flip(to), thickness, material)
 end
 
+-- Armor pieces (plates, straps, blades): flattened rounded blobs, so armor looks hammered and worn
+-- instead of boxy. Square blocks made the demons look like robots.
+local function plate(
+	list: { BodyPart },
+	name: string,
+	color: Color3,
+	size: Vector3,
+	offset: Vector3,
+	rotation: Vector3?,
+	material: Enum.Material?
+)
+	add(list, "Ellipsoid", name, color, size, offset, rotation, material)
+end
+
+local function platePair(
+	list: { BodyPart },
+	name: string,
+	color: Color3,
+	size: Vector3,
+	offset: Vector3,
+	rotation: Vector3?,
+	material: Enum.Material?
+)
+	plate(list, name .. "R", color, size, offset, rotation, material)
+	local mirrored = if rotation then v(rotation.X, -rotation.Y, -rotation.Z) else nil
+	plate(list, name .. "L", color, size, flip(offset), mirrored, material)
+end
+
+-- A flat bar joining two points (a bracer, a strap, a spike).
+local function bar(
+	list: { BodyPart },
+	name: string,
+	color: Color3,
+	from: Vector3,
+	to: Vector3,
+	thickness: number,
+	material: Enum.Material?
+)
+	local delta = to - from
+	local size = v(thickness, delta.Magnitude, thickness)
+	plate(list, name, color, size, (from + to) / 2, pointY(delta), material)
+end
+
+local function barPair(
+	list: { BodyPart },
+	name: string,
+	color: Color3,
+	from: Vector3,
+	to: Vector3,
+	thickness: number,
+	material: Enum.Material?
+)
+	bar(list, name .. "R", color, from, to, thickness, material)
+	bar(list, name .. "L", color, flip(from), flip(to), thickness, material)
+end
+
 -- A curved strand starting at `start`, heading along `direction` and bending towards `toward`.
 local function strand(
 	list: { BodyPart },
@@ -445,9 +501,9 @@ local function daayan(): { BodyPart }
 	blob(parts, "Shawl", shawl, v(2.5, 0.7, 1.7), v(0, 1.95, 0), nil, CLOTH)
 	blob(parts, "ShawlTail", shawlDark, v(1.4, 2.6, 0.15), v(0, 0.4, 0.95), nil, CLOTH)
 	blobPair(parts, "Foot", skinDark, v(0.5, 0.2, 0.9), v(0.6, -2.85, -0.3))
-	-- Head: hooked nose, glowing eyes, a crooked grin and wild hair
+	-- Head: hooked nose, glowing eyes and a crooked grin
 	limb(parts, "Neck", skin, v(0, 2, 0), v(0, 2.45, -0.5), 0.35)
-	blob(parts, "HairBack", hair, v(1.5, 1.6, 0.6), v(0, 2.9, -0.1))
+	blob(parts, "HairBack", hair, v(1.5, 1.9, 0.7), v(0, 2.8, -0.2))
 	blob(parts, "Head", skin, v(1.1, 1.35, 1.15), v(0, 2.85, -0.65))
 	blob(parts, "Chin", skin, v(0.45, 0.55, 0.5), v(0, 2.3, -1))
 	blobPair(parts, "Brow", skinDark, v(0.5, 0.15, 0.25), v(0.28, 3.15, -1.15), v(0, 0, 15))
@@ -463,17 +519,25 @@ local function daayan(): { BodyPart }
 	blob(parts, "Mouth", hollow, v(0.6, 0.15, 0.15), v(0, 2.5, -1.2))
 	blobPair(parts, "Tooth", BONE, v(0.08, 0.2, 0.08), v(0.12, 2.43, -1.27))
 	blobPair(parts, "Wart", skinDark, v(0.1, 0.1, 0.1), v(0.4, 2.65, -1.1))
-	for index = -4, 4 do
+	-- Long grey hair hanging down her back, with locks framing the face
+	for index = -3, 3 do
 		strand(
 			parts,
 			`Hair{index}`,
 			hair,
-			v(index * 0.14, 3.45, -0.5),
-			v(index * 0.4, 0.9, 0.3),
-			v(0, -1, 0.1),
-			{ segments = 5, step = 0.55, from = 0.22, to = 0.05, bend = 28 }
+			v(index * 0.17, 3.4, -0.4),
+			v(index * 0.05, -0.15, 0.5),
+			v(0, -1, -0.1),
+			{ segments = 8, step = 0.55, from = 0.28, to = 0.06, bend = 15 }
 		)
 	end
+	strandPair(parts, "Lock", hair, v(0.55, 3.3, -0.75), v(0.2, -0.3, -0.1), v(0, -1, 0.1), {
+		segments = 5,
+		step = 0.5,
+		from = 0.2,
+		to = 0.05,
+		bend = 35,
+	})
 	blobPair(parts, "Shoulder", shawl, v(0.6, 0.6, 0.6), v(0.95, 1.8, 0.1))
 	-- Right arm holds the staff
 	limb(parts, "UpperArmR", skin, v(0.95, 1.8, 0.1), v(1.35, 0.8, -0.3), 0.28)
@@ -501,37 +565,36 @@ local function daayan(): { BodyPart }
 	return parts
 end
 
-type RakshasaPalette = {
+type OgrePalette = {
 	skin: Color3,
-	light: Color3,
 	dark: Color3,
-	cloth: Color3,
-	gold: Color3,
-	metal: Color3,
+	cloth: Color3, -- waist cloth
+	armor: Color3, -- main armor plates
+	trim: Color3, -- armor edges and jewellery
+	metal: Color3, -- blades and spikes
 	wood: Color3,
 	hair: Color3,
-	glow: Color3,
+	glow: Color3, -- eyes
 }
 
--- Rakshasa: a huge, fierce demon warrior. Heavy brow, glowing eyes, boar-like tusks, curved horns,
--- a thick moustache, gold ornaments and a spiked mace. Krodha reuses this body, bigger.
-local function rakshasa(p: RakshasaPalette): { BodyPart }
+local LEATHER = Enum.Material.Leather
+local METAL = Enum.Material.Metal
+
+-- The body shared by the Tusked Brute and the Rage King: a huge, fierce demon with a heavy brow,
+-- glowing eyes, boar-like tusks and a thick moustache. Each wears different armor on top.
+local function ogre(p: OgrePalette, withHair: boolean, withHorns: boolean): { BodyPart }
 	local parts: { BodyPart } = {}
-	-- Torso
-	blob(parts, "Chest", p.skin, v(3, 2.6, 1.9), v(0, 1.3, 0), v(-6, 0, 0))
-	blobPair(parts, "Pec", p.light, v(1.4, 1.1, 0.8), v(0.75, 1.8, -0.8))
-	blob(parts, "Belly", p.dark, v(1.9, 1.7, 1.3), v(0, -0.4, -0.2))
+	-- Torso: broad shoulders tapering to the waist (armor covers most of it)
+	blob(parts, "Chest", p.skin, v(3.2, 2.6, 1.8), v(0, 1.3, 0), v(-6, 0, 0))
+	blob(parts, "Belly", p.dark, v(1.9, 1.6, 1.2), v(0, -0.4, -0.2))
 	blob(parts, "Hips", p.dark, v(2.2, 1.1, 1.5), v(0, -1.4, 0))
-	-- Arms with gold armlets and bangles
-	blobPair(parts, "Shoulder", p.skin, v(1.6, 1.6, 1.6), v(2, 2.3, 0))
-	limbPair(parts, "UpperArm", p.skin, v(2, 2.2, 0), v(2.5, 0.6, -0.25), 1.25)
-	limbPair(parts, "Forearm", p.skin, v(2.5, 0.6, -0.25), v(2.45, -0.9, -0.6), 1.05)
-	blobPair(parts, "Fist", p.dark, v(1.2, 1.2, 1.2), v(2.45, -1.3, -0.65))
-	blobPair(parts, "Armlet", p.gold, v(1.5, 0.3, 1.5), v(2.3, 1.5, -0.1))
-	blobPair(parts, "Bangle", p.gold, v(1.2, 0.25, 1.2), v(2.47, -0.75, -0.55))
+	-- Arms
+	blobPair(parts, "Shoulder", p.skin, v(1.3, 1.3, 1.3), v(2, 2.3, 0))
+	limbPair(parts, "UpperArm", p.skin, v(2, 2.2, 0), v(2.5, 0.6, -0.25), 1.15)
+	limbPair(parts, "Forearm", p.skin, v(2.5, 0.6, -0.25), v(2.45, -0.9, -0.6), 0.95)
+	blobPair(parts, "Fist", p.dark, v(1, 1, 1), v(2.45, -1.3, -0.65))
 	-- Head and face
 	blob(parts, "Neck", p.skin, v(1.3, 0.9, 1.2), v(0, 2.9, -0.1))
-	blob(parts, "Collar", p.gold, v(1.9, 0.3, 1.5), v(0, 2.65, -0.1))
 	blob(parts, "Head", p.skin, v(1.8, 1.7, 1.6), v(0, 3.6, -0.25))
 	blob(parts, "Jaw", p.dark, v(1.6, 0.8, 1.4), v(0, 3.05, -0.35))
 	blobPair(parts, "Brow", p.dark, v(0.95, 0.35, 0.55), v(0.5, 3.95, -0.95), v(0, 0, 22))
@@ -559,116 +622,185 @@ local function rakshasa(p: RakshasaPalette): { BodyPart }
 		to = 0.08,
 		bend = 20,
 	})
-	blobPair(parts, "Earring", p.gold, v(0.18, 0.45, 0.1), v(1.1, 3.4, -0.2))
-	strandPair(parts, "Horn", BONE, v(0.65, 4.3, -0.25), v(0.3, 1, -0.15), v(-1, 0.3, 0), {
-		segments = 5,
-		step = 0.45,
-		from = 0.4,
-		to = 0.07,
-		bend = 22,
-	})
-	-- Hair swept back from the crown
-	for index = -3, 3 do
-		strand(
-			parts,
-			`Hair{index}`,
-			p.hair,
-			v(index * 0.22, 4.35, -0.1),
-			v(index * 0.08, 0.5, 1),
-			v(0, -1, 0),
-			{ segments = 4, step = 0.5, from = 0.24, to = 0.06, bend = 30 }
-		)
+	blobPair(parts, "Earring", p.trim, v(0.18, 0.45, 0.1), v(1.1, 3.4, -0.2))
+	if withHorns then
+		strandPair(parts, "Horn", BONE, v(0.65, 4.3, -0.25), v(0.3, 1, -0.15), v(-1, 0.3, 0), {
+			segments = 5,
+			step = 0.45,
+			from = 0.4,
+			to = 0.07,
+			bend = 22,
+		})
 	end
-	-- Waist cloth, gold sash and legs
+	if withHair then
+		-- Hair swept back from the crown
+		for index = -3, 3 do
+			strand(
+				parts,
+				`Hair{index}`,
+				p.hair,
+				v(index * 0.22, 4.35, -0.1),
+				v(index * 0.08, 0.5, 1),
+				v(0, -1, 0),
+				{ segments = 4, step = 0.5, from = 0.24, to = 0.06, bend = 30 }
+			)
+		end
+	end
+	-- Waist cloth and legs
 	blob(parts, "Cloth", p.cloth, v(2.5, 1.3, 1.8), v(0, -2, 0), nil, CLOTH)
 	blob(parts, "ClothFront", p.cloth, v(1.5, 1.8, 0.2), v(0, -2.7, -0.9), nil, CLOTH)
-	blob(parts, "ClothTrim", p.gold, v(1.5, 0.2, 0.28), v(0, -3.55, -0.9))
-	blob(parts, "Sash", p.gold, v(2.5, 0.35, 1.8), v(0, -1.35, 0))
-	blob(parts, "SashBoss", p.gold, v(0.55, 0.55, 0.25), v(0, -1.35, -0.92))
-	limbPair(parts, "Thigh", p.skin, v(0.9, -1.8, 0), v(1, -3, -0.3), 1.4)
-	limbPair(parts, "Shin", p.skin, v(1, -3, -0.3), v(1, -3.8, 0), 1.1)
+	plate(parts, "ClothTrim", p.trim, v(1.5, 0.15, 0.25), v(0, -3.6, -0.9))
+	limbPair(parts, "Thigh", p.skin, v(0.9, -1.8, 0), v(1, -3, -0.3), 1.3)
+	limbPair(parts, "Shin", p.skin, v(1, -3, -0.3), v(1, -3.8, 0), 1.05)
 	blobPair(parts, "Foot", p.dark, v(1.2, 0.5, 2), v(1, -3.75, -0.4))
 	for toe = -1, 1 do
 		local from = v(1 + toe * 0.35, -3.8, -1.2)
 		limbPair(parts, `Toe{toe}`, p.dark, from, v(1 + toe * 0.35, -3.8, -1.75), 0.3)
 	end
-	-- Spiked mace in the right hand
-	local head = v(3.15, 3, -1.05)
-	limb(parts, "MaceShaft", p.wood, v(2.45, -1.5, -0.65), v(3.1, 2.6, -1), 0.28)
-	blob(parts, "MaceHead", p.metal, v(1.2, 1.2, 1.2), head)
-	local spikes = { v(1, 0, 0), v(-1, 0, 0), v(0, 0, 1), v(0, 0, -1), v(0, 1, 0) }
-	for index, direction in spikes do
-		limb(
+	return parts
+end
+
+-- Tusked Brute: blue-skinned, in layered leather and bronze, carrying a spiked club.
+local function rakshasa(): { BodyPart }
+	local p: OgrePalette = {
+		skin = Color3.fromRGB(64, 84, 142),
+		dark = Color3.fromRGB(42, 54, 100),
+		cloth = Color3.fromRGB(104, 62, 44),
+		armor = Color3.fromRGB(132, 92, 58),
+		trim = Color3.fromRGB(190, 134, 62),
+		metal = Color3.fromRGB(120, 120, 132),
+		wood = Color3.fromRGB(98, 68, 42),
+		hair = Color3.fromRGB(20, 18, 30),
+		glow = Color3.fromRGB(255, 205, 70),
+	}
+	local parts = ogre(p, true, true)
+	local tilt = v(-6, 0, 0)
+	-- Chest guard: overlapping leather bands that follow the curve of the chest
+	for band = 1, 5 do
+		local y = 0.5 + (band - 1) * 0.45
+		local around = math.sqrt(1 - ((y - 1.3) / 1.3) ^ 2)
+		local width = 2 * 1.6 * around * 0.95
+		local z = -0.9 * around - 0.1
+		plate(parts, `ChestBand{band}`, p.armor, v(width, 0.5, 0.22), v(0, y, z), tilt, LEATHER)
+		plate(
 			parts,
-			`MaceSpike{index}`,
-			p.metal,
-			head + direction * 0.5,
-			head + direction * 1.1,
-			0.24
+			`ChestEdge{band}`,
+			p.trim,
+			v(width, 0.07, 0.26),
+			v(0, y - 0.24, z),
+			tilt,
+			METAL
 		)
+	end
+	bar(parts, "ChestStrap", p.cloth, v(-1.4, 2.7, -0.7), v(1.2, 0.4, -0.95), 0.3, LEATHER)
+	-- Layered bronze shoulder guards with a spike, and bronze bracers
+	for tier = 1, 3 do
+		local size = v(2.2 - 0.3 * tier, 0.22, 2 - 0.25 * tier)
+		local at = v(2 + 0.25 * tier, 2.85 - 0.3 * tier, 0)
+		local color = if tier % 2 == 1 then p.trim else p.armor
+		platePair(parts, `Pauldron{tier}`, color, size, at, v(0, 0, -(10 + 6 * tier)), METAL)
+	end
+	strandPair(parts, "ShoulderSpike", p.metal, v(2.3, 3, 0), v(0.3, 1, 0), v(-1, 0, 0), {
+		segments = 2,
+		step = 0.45,
+		from = 0.3,
+		to = 0.08,
+		bend = 15,
+	})
+	barPair(parts, "Bracer", p.trim, v(2.49, 0.2, -0.35), v(2.46, -0.4, -0.5), 1.05, METAL)
+	-- Studded belt
+	plate(parts, "Belt", p.cloth, v(2.5, 0.45, 1.7), v(0, -1.35, 0), nil, LEATHER)
+	plate(parts, "Buckle", p.trim, v(0.7, 0.6, 0.12), v(0, -1.35, -0.88), nil, METAL)
+	-- Spiked wooden club in the right hand, getting thicker towards the top
+	strand(parts, "Club", p.wood, v(2.5, -1.4, -0.65), v(0.15, 1, -0.12), v(0, 0, 1), {
+		segments = 5,
+		step = 0.95,
+		from = 0.3,
+		to = 0.85,
+		bend = 0,
+	})
+	local head = v(3.12, 2.72, -1.16)
+	local studs = { v(1, 0, 0), v(-1, 0, 0), v(0, 0, 1), v(0, 0, -1), v(0, 1, 0) }
+	for index, direction in studs do
+		local from = head + direction * 0.55
+		limb(parts, `ClubSpike{index}`, p.metal, from, head + direction * 1.15, 0.22, METAL)
 	end
 	return parts
 end
 
+-- The Rage King: red-skinned and crowned, in black iron with gold trim and a mane of flame.
+-- It is the Brute's body, made bigger, with a great axe in place of the club.
 local function krodha(): { BodyPart }
-	local glow = Color3.fromRGB(255, 235, 120)
-	local parts = scaled(
-		rakshasa({
-			skin = Color3.fromRGB(110, 34, 34),
-			light = Color3.fromRGB(150, 50, 44),
-			dark = Color3.fromRGB(70, 20, 24),
-			cloth = Color3.fromRGB(40, 24, 30),
-			gold = Color3.fromRGB(240, 190, 70),
-			metal = Color3.fromRGB(50, 46, 56),
-			wood = Color3.fromRGB(60, 40, 30),
-			hair = Color3.fromRGB(30, 12, 12),
-			glow = glow,
-		}),
-		1.75
-	)
-
-	-- A mane of living flame rising behind the head.
-	local flameOrange = Color3.fromRGB(255, 110, 30)
-	local flameYellow = Color3.fromRGB(255, 190, 50)
-	for index = -4, 4 do
-		local color = if index % 2 == 0 then flameOrange else flameYellow
-		strand(
-			parts,
-			`Flame{index}`,
-			color,
-			v(index * 0.6, 6.6, 1),
-			v(index * 0.25, 1, 0.5),
-			v(0, 0, 1),
-			{ segments = 4, step = 0.8, from = 0.7, to = 0.12, bend = 15 },
-			NEON
-		)
+	local p: OgrePalette = {
+		skin = Color3.fromRGB(150, 30, 34),
+		dark = Color3.fromRGB(96, 20, 26),
+		cloth = Color3.fromRGB(46, 24, 30),
+		armor = Color3.fromRGB(38, 36, 46),
+		trim = Color3.fromRGB(236, 186, 70),
+		metal = Color3.fromRGB(168, 172, 186),
+		wood = Color3.fromRGB(60, 40, 30),
+		hair = Color3.fromRGB(30, 12, 12),
+		glow = Color3.fromRGB(255, 235, 120),
+	}
+	local parts = ogre(p, false, false)
+	local tilt = v(-6, 0, 0)
+	-- One big breastplate with a gold border and chevron, and a gold collar
+	plate(parts, "BreastBorder", p.trim, v(2.6, 1.9, 0.3), v(0, 1.5, -0.74), tilt, METAL)
+	plate(parts, "Breastplate", p.armor, v(2.4, 1.7, 0.4), v(0, 1.5, -0.8), tilt, METAL)
+	barPair(parts, "Chevron", p.trim, v(1.05, 2.1, -1.02), v(0, 0.9, -1.04), 0.13, METAL)
+	plate(parts, "Collar", p.trim, v(2.1, 0.3, 1.7), v(0, 2.75, -0.05), nil, METAL)
+	-- Domed shoulder guards with gold rims and spikes, and gold armlets
+	platePair(parts, "Pauldron", p.armor, v(2.4, 1, 2.3), v(2.15, 2.85, 0), v(0, 0, -26), METAL)
+	platePair(parts, "PauldronRim", p.trim, v(2.5, 0.16, 2.4), v(2.35, 2.4, 0), v(0, 0, -26), METAL)
+	for index, z in { -0.55, 0.55 } do
+		local spec = { segments = 2, step = 0.5, from = 0.35, to = 0.08, bend = 12 }
+		local at = v(2.6, 3.15, z)
+		strandPair(parts, `ShoulderSpike{index}`, p.metal, at, v(0.3, 1, 0), v(-1, 0, 0), spec)
 	end
-
-	-- A second, larger pair of horns, and spiked iron shoulder plates.
-	strandPair(parts, "BigHorn", BONE, v(1.5, 7.2, -0.45), v(0.9, 0.9, -0.1), v(-0.6, 0.5, 0), {
+	platePair(parts, "Armlet", p.trim, v(1.5, 0.28, 1.5), v(2.3, 1.5, -0.1), v(0, 0, -12), METAL)
+	-- Black bracer sleeves, gauntlets and greaves, with gold rings at the wrists
+	limbPair(parts, "Bracer", p.armor, v(2.5, 0.45, -0.3), v(2.45, -0.7, -0.58), 1.1, METAL)
+	platePair(parts, "BracerRing", p.trim, v(1.2, 0.2, 1.2), v(2.46, -0.78, -0.6), nil, METAL)
+	platePair(parts, "Knuckle", p.armor, v(0.95, 1.15, 1), v(2.45, -1.3, -0.65), nil, METAL)
+	limbPair(parts, "Greave", p.armor, v(1, -2.7, -0.3), v(1, -3.5, -0.05), 1.2, METAL)
+	-- Belt and a skirt of overlapping hanging plates, edged in gold
+	plate(parts, "Belt", p.armor, v(2.6, 0.5, 1.8), v(0, -1.35, 0), nil, METAL)
+	plate(parts, "Buckle", p.trim, v(0.7, 0.7, 0.15), v(0, -1.35, -0.93), v(0, 0, 45), METAL)
+	for index = 1, 5 do
+		local x = (index - 3) * 0.55
+		local swing = v(8, 0, (3 - index) * 4)
+		plate(parts, `Fauld{index}`, p.armor, v(0.75, 1.4, 0.14), v(x, -2.4, -0.98), swing, METAL)
+	end
+	plate(parts, "FauldEdge", p.trim, v(2.9, 0.1, 0.18), v(0, -3.05, -1.1), nil, METAL)
+	-- Spiked gold crown between big swept-forward horns, and a mane of flame
+	plate(parts, "CrownBand", p.trim, v(1.8, 0.28, 1.55), v(0, 4.18, -0.25), nil, METAL)
+	for index = -1, 1 do
+		local spec = { segments = 2, step = 0.3, from = 0.18, to = 0.06, bend = 0 }
+		local at = v(index * 0.4, 4.3, -0.55)
+		strand(parts, `CrownSpike{index}`, p.trim, at, v(0, 1, 0), v(0, 0, 1), spec, METAL)
+	end
+	strandPair(parts, "BigHorn", BONE, v(0.86, 4.1, -0.26), v(0.9, 0.9, -0.1), v(-0.6, 0.5, 0), {
 		segments = 5,
-		step = 0.7,
-		from = 0.6,
-		to = 0.1,
+		step = 0.4,
+		from = 0.34,
+		to = 0.06,
 		bend = 25,
 	})
-	local iron = Color3.fromRGB(50, 46, 56)
-	local gold = Color3.fromRGB(240, 190, 70)
-	blobPair(parts, "Pauldron", iron, v(3.4, 1, 3.2), v(4, 5, 0), v(0, 0, -15))
-	blobPair(parts, "PauldronRim", gold, v(3.5, 0.2, 3.3), v(4, 4.5, 0), v(0, 0, -15))
-	strandPair(parts, "PauldronSpike", iron, v(4.3, 5.4, 0), v(0.5, 1, 0), v(0, 1, 0), {
-		segments = 2,
-		step = 0.6,
-		from = 0.45,
-		to = 0.1,
-		bend = 10,
-	})
-
-	-- A glowing crack across the chest.
-	limb(parts, "Crack", glow, v(0, 3.2, -1.7), v(0, 1.2, -1.7), 0.2, NEON)
-	limb(parts, "CrackUp", glow, v(0, 3.2, -1.7), v(0.9, 3.9, -1.6), 0.15, NEON)
-	limb(parts, "CrackLow", glow, v(0, 1.6, -1.7), v(-0.8, 1, -1.6), 0.15, NEON)
-	return parts
+	for index = -4, 4 do
+		local orange = Color3.fromRGB(255, 110, 30)
+		local yellow = Color3.fromRGB(255, 190, 50)
+		local spec = { segments = 4, step = 0.46, from = 0.4, to = 0.07, bend = 15 }
+		local at = v(index * 0.34, 3.8, 0.6)
+		local color = if index % 2 == 0 then orange else yellow
+		strand(parts, `Flame{index}`, color, at, v(index * 0.25, 1, 0.5), v(0, 0, 1), spec, NEON)
+	end
+	-- Great axe in the right hand: a long shaft and a curved double blade
+	limb(parts, "AxeShaft", p.wood, v(2.45, -1.5, -0.65), v(3, 3.4, -1), 0.28)
+	plate(parts, "AxeSocket", p.armor, v(0.6, 1, 0.5), v(3.05, 2.6, -1), nil, METAL)
+	plate(parts, "AxeBlade", p.metal, v(1.5, 2.5, 0.16), v(3.95, 2.6, -1), nil, METAL)
+	plate(parts, "AxeBevel", p.armor, v(0.9, 1.7, 0.2), v(3.75, 2.6, -1), nil, METAL)
+	bar(parts, "AxeSpike", p.metal, v(3, 2.6, -1), v(2.2, 2.6, -1), 0.22, METAL)
+	return scaled(parts, 1.75)
 end
 
 local EnemyLooks: { [string]: { BodyPart } } = {
@@ -676,17 +808,7 @@ local EnemyLooks: { [string]: { BodyPart } } = {
 	Vetala = vetala(),
 	Chudail = chudail(),
 	Daayan = daayan(),
-	Rakshasa = rakshasa({
-		skin = Color3.fromRGB(150, 46, 42),
-		light = Color3.fromRGB(180, 70, 58),
-		dark = Color3.fromRGB(100, 28, 30),
-		cloth = Color3.fromRGB(110, 30, 40),
-		gold = Color3.fromRGB(214, 168, 64),
-		metal = Color3.fromRGB(74, 74, 84),
-		wood = Color3.fromRGB(92, 62, 38),
-		hair = Color3.fromRGB(36, 18, 22),
-		glow = Color3.fromRGB(255, 205, 70),
-	}),
+	Rakshasa = rakshasa(),
 	Krodha = krodha(),
 }
 

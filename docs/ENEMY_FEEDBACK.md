@@ -28,10 +28,12 @@ Enemy ids: `Pishacha`, `Vetala`, `Chudail`, `Daayan`, `Rakshasa`, `Krodha`.
   - Pishacha: matted strands drooping from the top of the head
   - Vetala: strands standing up, then falling
   - Chudail: long strands down the back, plus two locks by the face
-  - Daayan: a grey burst of strands
-  - Rakshasa: strands swept back; Krodha reuses them as flames
+  - Daayan: long grey strands down the back (like the Chudail's, but grey)
+  - Rakshasa (Tusked Brute): strands swept back
+  - Krodha (Rage King): no hair, a mane of flame and a crown instead
 - Heads are all one rounded blob with the same eye, brow and mouth layout.
-- Skin colours: three are pale grey (Pishacha, Vetala, Chudail) and two are red (Rakshasa, Krodha).
+- Skin colours: pale grey (Pishacha, Vetala, Chudail), tan (Daayan), blue (Brute) and red (King).
+- Brute and King share one body but wear different armor: leather and bronze with a spiked club, versus black iron and gold with a great axe.
 
 ## Pishacha ("Hungry Ghoul")
 
