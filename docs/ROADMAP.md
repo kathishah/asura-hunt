@@ -106,7 +106,7 @@ git worktree add ../asura-m5 -b m5-enemies
 
 Each agent gets a short brief: "Read AGENTS.md and docs/ROADMAP.md. Implement milestone M1 only. Do not touch files outside the list. Run stylua, selene and rojo build before finishing, and list what the human must playtest." Tell each agent which files are theirs.
 
-**Testing:** agents can lint and build, but only one Studio can be connected to one `rojo serve` at a time. So agents check lint and build, then you playtest one branch at a time. In its folder run `rojo serve --port 34873` and connect the plugin to that port. Or merge to an integration branch and playtest everything together.
+**Testing:** agents can lint, build and run `lune run tests/run` (install with `brew install lune`). The tests run the real modules against a fake Roblox, so they check saved data, config and server decisions but not how anything looks or feels. Agents should add tests for new logic. Playtesting needs Studio, and one Studio can only be connected to one `rojo serve` at a time, so you playtest one branch at a time: in that branch's folder run `rojo serve --port 34873` and connect the plugin to that port. Or merge to an integration branch and playtest everything together.
 
 **Rules that keep it safe:**
 - Each branch changes only its own files, plus the small shared spots above (a remote name, a type field).
