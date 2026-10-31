@@ -74,7 +74,11 @@ Found, not fixed:
 - The chat panel covers the HUD for the first few seconds after joining (known).
 - A test grant of gold needed a temporary server script, because Studio's command bar only runs on the client. It was removed.
 
-Not tested: saving (needs a published place), a full boss fight, and the shop merged with the later combat changes. Frame rate felt fine to the human. Rojo's plugin panel is too narrow to show the port field, so use the default port 34872 for each branch (one at a time).
+Not tested: saving (needs a published place) and a full boss fight. Frame rate felt fine to the human. Rojo's plugin panel is too narrow to show the port field, so use the default port 34872 for each branch (one at a time).
+
+## Merged build: shop with the combat changes (31 Oct 2026)
+
+`m4-shop` is merged into `main`. In one Studio run on the merged build: killing Ghouls earned 40 gold, P opened the shop, and Buy then Equip on the Iron Sword worked with real clicks. The Shop button, the E and Q cooldown boxes, the enemy health bars and the red windup glow all showed together (`docs/reference/playtest/merged-shop-and-combat.jpg`). Swings aimed at the Ghoul first, then did 11.84 damage with the sword, 10.29 without it and 11.84 again after re-equipping (+15% at level 2). 160 headless checks, lint and build pass.
 
 ## After testing
 
