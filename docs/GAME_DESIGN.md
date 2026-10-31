@@ -44,6 +44,8 @@ Content guidelines: use creature types from folklore. Do not use gods or goddess
 
 ## Roadmap
 
+Plans for each milestone, and how to build them in parallel, are in `docs/ROADMAP.md`.
+
 | Milestone | Goal | Status |
 | --- | --- | --- |
 | M0 | Project skeleton, combat, enemies, saving, HUD | Done (needs first playtest) |
