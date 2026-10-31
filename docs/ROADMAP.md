@@ -60,6 +60,8 @@ Short plans for each milestone, then how to run them in parallel with separate b
 ### M6: Polish and publish
 A tutorial, settings, a privacy and safety review, and a Roblox policy check. Plan it after M3 to M5 land.
 
+Wave 0 and the first parts of M1 and M4 are built but not yet playtested. What to check is in `docs/PLAYTEST.md`.
+
 ## Can they run in parallel?
 Mostly yes, but a few shared files will cause merge conflicts. These are the hotspots:
 

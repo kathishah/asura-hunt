@@ -58,6 +58,8 @@ The panel at top-left shows level, XP, gold and stats. Buttons let you switch pa
 default.project.json     Rojo mapping
 AGENTS.md / CLAUDE.md    Instructions for AI coding tools
 docs/GAME_DESIGN.md      Design, theme, roadmap
+docs/ROADMAP.md          Plans for each milestone and how to work in parallel
+docs/PLAYTEST.md         What has not been run in Studio yet, and what to check
 src/shared               Types, Remotes, Config (Enemies, Paths, GameConfig)
 src/server               Main + Services (Data, Enemy, Combat)
 src/client               Main, Input, HUD
