@@ -11,6 +11,7 @@ local Services = script.Parent.Services
 local CombatService = require(Services.CombatService)
 local DataService = require(Services.DataService)
 local EnemyService = require(Services.EnemyService)
+local ShopService = require(Services.ShopService)
 
 local statsChanged = Remotes.get("StatsChanged")
 
@@ -58,3 +59,4 @@ end)
 DataService.start()
 EnemyService.start()
 CombatService.start()
+ShopService.start()

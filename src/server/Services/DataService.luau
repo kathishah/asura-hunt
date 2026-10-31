@@ -188,6 +188,20 @@ function DataService.onChanged(listener: (Player, Types.PlayerData) -> ())
 	table.insert(listeners, listener)
 end
 
+-- Runs `change` on the player's data. If it returns true the change is kept and the client and
+-- listeners are told; return false (after checking, before changing anything) to refuse.
+function DataService.update(player: Player, change: (Types.PlayerData) -> boolean): boolean
+	local data = sessions[player]
+	if not data then
+		return false
+	end
+	if change(data) then
+		notify(player)
+		return true
+	end
+	return false
+end
+
 function DataService.addRewards(player: Player, xp: number, gold: number)
 	local data = sessions[player]
 	if not data then

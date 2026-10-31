@@ -6,6 +6,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Equipment = require(Shared.Equipment)
 local GameConfig = require(Shared.Config.GameConfig)
 local Paths = require(Shared.Config.Paths)
 local Remotes = require(Shared.Remotes)
@@ -62,7 +63,13 @@ local function computeDamage(data: Types.PlayerData, multiplier: number): number
 	local scaling = GameConfig.STAT_SCALING
 	local strengthBonus = 1 + data.stats.strength * scaling.strengthDamagePerPoint
 	local levelBonus = 1 + (data.level - 1) * scaling.damagePerLevel
-	return COMBAT.baseDamage * path.damageMultiplier * strengthBonus * levelBonus * multiplier
+	local weaponBonus = Equipment.damageMultiplier(data)
+	return COMBAT.baseDamage
+		* path.damageMultiplier
+		* strengthBonus
+		* levelBonus
+		* weaponBonus
+		* multiplier
 end
 
 local function strike(
@@ -162,6 +169,7 @@ function CombatService.applyCharacterStats(player: Player, data: Types.PlayerDat
 
 	local newMax = GameConfig.BASE_HEALTH
 		+ data.stats.vitality * GameConfig.STAT_SCALING.vitalityHealthPerPoint
+		+ Equipment.healthBonus(data)
 	if humanoid.MaxHealth ~= newMax then
 		local ratio = if humanoid.MaxHealth > 0 then humanoid.Health / humanoid.MaxHealth else 1
 		humanoid.MaxHealth = newMax
