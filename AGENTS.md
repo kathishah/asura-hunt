@@ -56,4 +56,4 @@ Before saying a task is finished:
 
 1. `stylua src` and `selene src` run clean.
 2. `rojo build -o build/AsuraHunt.rbxl` succeeds.
-3. You listed what must be playtested in Studio. You cannot run the game yourself, so say plainly what is untested and what to check by hand.
+3. You listed what must be playtested in Studio. If you could run the game yourself, say what you checked; if you could not, say plainly what is untested. Either way, name what the human should check by hand.

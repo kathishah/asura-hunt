@@ -11,6 +11,7 @@ local ServerStorage = game:GetService("ServerStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Enemies = require(Shared.Config.Enemies)
+local EnemyLooks = require(Shared.Config.EnemyLooks)
 local Types = require(Shared.Types)
 
 local SPAWN_TAG = "EnemySpawn"
@@ -55,7 +56,10 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	gui.Name = "Nameplate"
 	gui.Adornee = root
 	gui.Size = UDim2.fromOffset(180, 32)
-	gui.StudsOffsetWorldSpace = Vector3.new(0, def.size.Y / 2 + 2, 0)
+	-- Sit above the tallest part (horns, flames), not just the hitbox.
+	local boxCFrame, boxSize = model:GetBoundingBox()
+	local top = math.max(def.size.Y / 2, boxCFrame.Position.Y + boxSize.Y / 2 - root.Position.Y)
+	gui.StudsOffsetWorldSpace = Vector3.new(0, top + 2, 0)
 	gui.AlwaysOnTop = false
 	gui.MaxDistance = 80
 
@@ -78,6 +82,44 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	gui.Parent = model
 end
 
+-- Welds the enemy's decorative parts to its hitbox. They never collide or block attacks.
+local function addBodyParts(model: Model, root: BasePart, bodyParts: { Types.BodyPart })
+	for _, def in bodyParts do
+		local part = Instance.new("Part")
+		part.Name = def.name
+		if def.shape == "Ball" then
+			part.Shape = Enum.PartType.Ball
+		elseif def.shape == "Cylinder" then
+			part.Shape = Enum.PartType.Cylinder
+		elseif def.shape == "Ellipsoid" then
+			-- A sphere mesh stretches with the part's size into a rounded blob.
+			local mesh = Instance.new("SpecialMesh")
+			mesh.MeshType = Enum.MeshType.Sphere
+			mesh.Parent = part
+		end
+		part.Size = def.size
+		part.Color = def.color
+		part.Material = def.material or Enum.Material.SmoothPlastic
+		part.CanCollide = false
+		part.CanTouch = false
+		part.CanQuery = false
+		part.Massless = true
+
+		local rotation = def.rotation or Vector3.zero
+		local relative = CFrame.new(def.offset)
+			* CFrame.Angles(math.rad(rotation.X), math.rad(rotation.Y), math.rad(rotation.Z))
+		part.CFrame = root.CFrame * relative
+
+		local weld = Instance.new("Weld")
+		weld.Part0 = root
+		weld.Part1 = part
+		weld.C0 = relative
+		weld.Parent = part
+
+		part.Parent = model
+	end
+end
+
 local function buildModel(def: Types.EnemyDef, position: Vector3): Model?
 	local enemyModels = ServerStorage:FindFirstChild("EnemyModels")
 	local template = if enemyModels then enemyModels:FindFirstChild(def.id) else nil
@@ -87,7 +129,8 @@ local function buildModel(def: Types.EnemyDef, position: Vector3): Model?
 		return clone
 	end
 
-	-- Placeholder: a single coloured block driven by a Humanoid.
+	-- Built from EnemyLooks: an invisible hitbox driven by a Humanoid, wearing welded parts.
+	-- An enemy with no look listed falls back to a plain coloured block.
 	local model = Instance.new("Model")
 	model.Name = def.displayName
 
@@ -104,6 +147,12 @@ local function buildModel(def: Types.EnemyDef, position: Vector3): Model?
 	humanoid.Parent = model
 
 	model.PrimaryPart = root
+
+	local bodyParts = EnemyLooks[def.id]
+	if bodyParts then
+		root.Transparency = 1
+		addBodyParts(model, root, bodyParts)
+	end
 	return model
 end
 

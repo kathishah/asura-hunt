@@ -48,7 +48,7 @@ The panel at top-left shows level, XP, gold and stats. Buttons let you switch pa
 ## Known rough edges (expected at this stage)
 
 - **Nothing has been run in Studio yet.** The code was written without the ability to launch Roblox, so expect to fix small things on first play. Paste any red errors from the Output window to your AI tool.
-- Enemies are coloured blocks. If they float or sink into the ground, adjust `HipHeight` in `EnemyService.buildModel`.
+- Enemies are built from simple blocks, balls and cylinders. Reshape them in `src/shared/Config/EnemyLooks.luau`. If they float or sink into the ground, adjust `HipHeight` in `EnemyService.buildModel`.
 - No attack animations or effects yet, so combat will feel flat until you add them in Studio.
 - Enemy spawns use a default layout. To place them yourself, add Parts to the map, tag them `EnemySpawn` (Tag Editor plugin or the Properties panel) and give each a string attribute `EnemyId` (for example `Vetala`).
 

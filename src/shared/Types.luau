@@ -36,6 +36,24 @@ export type PlayerData = {
 	stats: Stats,
 }
 
+-- Ellipsoids are rounded blobs that can be stretched to any size, so they make soft, organic
+-- bodies. Cylinders lie along the X axis, so rotate them 90 degrees on Z to stand upright.
+-- Balls must have equal X, Y and Z sizes.
+export type PartShape = "Block" | "Ball" | "Cylinder" | "Ellipsoid"
+
+-- One decorative piece of an enemy's body, welded to its hitbox.
+export type BodyPart = {
+	name: string,
+	shape: PartShape,
+	color: Color3,
+	size: Vector3,
+	-- Studs from the hitbox centre. Enemies face -Z, so negative Z is their front.
+	offset: Vector3,
+	-- Degrees around X, Y and Z.
+	rotation: Vector3?,
+	material: Enum.Material?,
+}
+
 export type EnemyDef = {
 	id: string,
 	displayName: string,
