@@ -52,7 +52,7 @@ Plans for each milestone, and how to build them in parallel, are in `docs/ROADMA
 | M1 | Combat feel: animations, hit effects, sounds, enemy attack telegraphs | Telegraphs built on branch `m1-combat-feel` (needs a Studio playtest); hit effects, animations and sounds still to do |
 | M2 | First zone: build the map in Studio, place spawn points, lighting | In progress: starter fortress-city built (see `docs/ZONE1_PLAN.md`) |
 | M3 | Boss fight: attack patterns, boss health bar, reward drops | |
-| M4 | Gold sink: shop for weapons and armour, equipment stats | |
+| M4 | Gold sink: shop for weapons and armour, equipment stats | Built on branch `m4-shop` (needs a Studio playtest; shopkeeper NPC still to place) |
 | M5 | Second zone and new enemy types | |
 | M6 | Polish and publish: tutorial, settings, privacy and safety review | |
 

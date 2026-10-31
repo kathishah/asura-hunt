@@ -67,6 +67,19 @@ export type ProjectileDef = {
 	color: Color3,
 }
 
+export type ItemSlot = "weapon" | "armor"
+
+export type ItemDef = {
+	id: string,
+	displayName: string,
+	description: string,
+	slot: ItemSlot,
+	price: number,
+	damageMultiplier: number?, -- weapons: multiplies all damage you deal (1 = no change)
+	healthBonus: number?, -- armour: extra max health
+	paths: { PathId }?, -- weapons only work for these paths; left out means any path
+}
+
 export type EnemyDef = {
 	id: string,
 	-- Easy English name shown to players, with the folklore name as a small subtitle.

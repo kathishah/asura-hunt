@@ -80,6 +80,9 @@ function harness.newWorld(options: { services: { [string]: any }? }?)
 	}
 	world.services.ServerScriptService = { Server = server }
 	world.services.RunService = {
+		IsServer = function()
+			return true
+		end,
 		Heartbeat = {
 			Wait = function()
 				return 1 / 60
@@ -97,8 +100,44 @@ function harness.newWorld(options: { services: { [string]: any }? }?)
 		BindToClose = function() end,
 	}
 
+	-- Just enough of Instance for Remotes: instances with a name, children found by name, and
+	-- RemoteEvents whose handlers a test can fire with `remote.__fireServer(player, ...)`.
+	local Instance = {
+		new = function(class: string)
+			local children: { [string]: any } = {}
+			local handlers: { (...any) -> () } = {}
+			local inst: { [string]: any } = {
+				ClassName = class,
+				__children = children,
+				OnServerEvent = {
+					Connect = function(_, handler)
+						table.insert(handlers, handler)
+					end,
+				},
+				FireClient = function() end,
+				WaitForChild = function(_, name)
+					return children[name]
+				end,
+			}
+			inst.__fireServer = function(...)
+				for _, handler in handlers do
+					handler(...)
+				end
+			end
+			return setmetatable(inst, {
+				__newindex = function(self, key, value)
+					rawset(self, key, value)
+					if key == "Parent" and type(value) == "table" and value.__children then
+						value.__children[self.Name] = self
+					end
+				end,
+			})
+		end,
+	}
+
 	local env: { [string]: any } = {
 		game = game,
+		Instance = Instance,
 		task = luneTask,
 		Enum = fakeEnum(),
 		Vector3 = {

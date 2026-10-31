@@ -43,6 +43,7 @@ Short plans for each milestone, then how to run them in parallel with separate b
 
 **Touches:** `Types` (`PlayerData`, new `ItemDef`), `DataService`, `CombatService`, `GameConfig`, `Remotes`, new services, new client `Shop`.
 **Needs from you:** which weapons are cool, names and prices, where the shop stands.
+**Built so far (branch `m4-shop`):** `Config/Items.luau` (6 items), the rules in `src/shared/Equipment.luau`, `ShopService` (server-checked buy, equip, unequip), equipment applied in `CombatService` (weapon damage, armour health), and the shop screen `UI/Shop.luau` (button or P key; B is reserved for a future backpack screen). The shop works from anywhere. Still to do by hand: place a shopkeeper in the map and make the shop require standing near them; pick the final weapons and prices with your son.
 **Done when:** you can buy a sword with gold, equip it, see your damage go up, quit, rejoin and still have it.
 
 ### M5: Second zone and new enemies

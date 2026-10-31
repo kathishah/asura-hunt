@@ -34,6 +34,9 @@ Edit a `.luau` file, save, and Studio updates live. Stop and re-press Play to te
 | Attack (3-hit combo) | Left click | On-screen "Slash" button / R2 |
 | Path skill | E | "Skill" button / X |
 | Dodge (brief invulnerability) | Q | "Dodge" button / B |
+| Shop | P | "Shop" button |
+
+On a PC, **B is reserved for a future backpack screen** and the shop is on **P**. Keep new keys away from W, A, S and D, which walk the character.
 
 The panel at top-left shows level, XP, gold and stats. Buttons let you switch path and spend stat points.
 

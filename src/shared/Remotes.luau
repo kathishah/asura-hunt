@@ -13,6 +13,9 @@ local REMOTE_NAMES = {
 	"ChoosePath",
 	"SpendStat",
 	"ClientReady",
+	"BuyItem",
+	"EquipItem",
+	"UnequipSlot",
 	-- Server -> client
 	"StatsChanged",
 	"DamageNumber",
