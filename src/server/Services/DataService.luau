@@ -12,7 +12,14 @@ local Types = require(Shared.Types)
 local DEFAULT_PATH: Types.PathId = "Yodha"
 local MAX_ATTEMPTS = 3
 
-local store = DataStoreService:GetDataStore(GameConfig.DATASTORE_NAME)
+-- GetDataStore throws in an unpublished place, so guard it: the game must still run, just unsaved.
+local storeOk, storeResult = pcall(function()
+	return DataStoreService:GetDataStore(GameConfig.DATASTORE_NAME)
+end)
+local store: DataStore? = if storeOk then storeResult else nil
+if not store then
+	warn(`[DataService] DataStore unavailable (publish the place to enable saving): {storeResult}`)
+end
 
 local sessions: { [Player]: Types.PlayerData } = {}
 -- If loading failed we play with temporary data and must NOT save it over the real record.
@@ -76,10 +83,13 @@ end
 local function loadPlayer(player: Player)
 	local success = false
 	local result: any = nil
+	local dataStore = store
+	-- No store means retrying cannot help, so skip straight to the load-failed path.
+	local attempts = if dataStore then MAX_ATTEMPTS else 0
 
-	for attempt = 1, MAX_ATTEMPTS do
+	for attempt = 1, attempts do
 		success, result = pcall(function()
-			return store:GetAsync(keyFor(player))
+			return (dataStore :: DataStore):GetAsync(keyFor(player))
 		end)
 		if success then
 			break
@@ -105,13 +115,14 @@ end
 
 local function savePlayer(player: Player)
 	local data = sessions[player]
-	if not data or loadFailed[player] then
+	local dataStore = store
+	if not data or not dataStore or loadFailed[player] then
 		return
 	end
 
 	for attempt = 1, MAX_ATTEMPTS do
 		local success, err = pcall(function()
-			store:UpdateAsync(keyFor(player), function()
+			dataStore:UpdateAsync(keyFor(player), function()
 				return data
 			end)
 		end)
