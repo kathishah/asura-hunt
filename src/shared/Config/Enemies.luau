@@ -39,6 +39,23 @@ local Enemies: { [string]: Types.EnemyDef } = {
 		size = Vector3.new(3, 6, 2),
 		color = Color3.fromRGB(96, 78, 120),
 	},
+	Chudail = {
+		id = "Chudail",
+		displayName = "Backfoot Hag",
+		folkloreName = "Chudail",
+		maxHealth = 110,
+		damage = 9,
+		-- Faster than a walking player, so she catches you if you just run.
+		walkSpeed = 17,
+		aggroRange = 45,
+		attackRange = 5,
+		attackCooldown = 1.2,
+		xp = 22,
+		gold = 9,
+		respawnSeconds = 10,
+		size = Vector3.new(2.5, 6, 1.8),
+		color = Color3.fromRGB(104, 36, 58),
+	},
 	Rakshasa = {
 		id = "Rakshasa",
 		displayName = "Tusked Brute",

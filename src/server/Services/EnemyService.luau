@@ -36,6 +36,8 @@ local DEFAULT_SPAWNS = {
 	{ id = "Pishacha", position = Vector3.new(0, 4, 40) },
 	{ id = "Vetala", position = Vector3.new(0, 4, -60) },
 	{ id = "Vetala", position = Vector3.new(60, 4, 60) },
+	{ id = "Chudail", position = Vector3.new(-60, 4, -50) },
+	{ id = "Chudail", position = Vector3.new(30, 4, -100) },
 	{ id = "Rakshasa", position = Vector3.new(-90, 4, 90) },
 	{ id = "Krodha", position = Vector3.new(0, 8, -150) },
 }

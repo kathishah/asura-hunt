@@ -332,6 +332,96 @@ local function vetala(): { BodyPart }
 	return parts
 end
 
+-- Chudail: the restless ghost of a woman, from village folk tales. Pale and thin in a tattered
+-- gown, with long black hair, amber eyes, fangs, long claws and feet that point backwards.
+local function chudail(): { BodyPart }
+	local skin = Color3.fromRGB(176, 182, 196)
+	local skinDark = Color3.fromRGB(120, 126, 144)
+	local gown = Color3.fromRGB(104, 36, 58)
+	local gownDark = Color3.fromRGB(66, 24, 42)
+	local hair = Color3.fromRGB(14, 12, 18)
+	local hollow = Color3.fromRGB(24, 16, 26)
+	local eye = Color3.fromRGB(255, 170, 40)
+
+	local parts: { BodyPart } = {}
+	-- Gown: fitted top, a skirt that flares out, and torn strips at the hem
+	blob(parts, "Bodice", gown, v(1.8, 2.3, 1.1), v(0, 0.8, 0), v(-6, 0, 0), CLOTH)
+	blob(parts, "Skirt", gownDark, v(2.3, 2.6, 1.6), v(0, -0.8, 0), nil, CLOTH)
+	blob(parts, "Flare", gown, v(2.7, 1.3, 1.9), v(0, -1.65, 0), nil, CLOTH)
+	local hem = { 0.5, 0.35, 0.45, 0.3, 0.5 }
+	for index, length in hem do
+		local x = (index - 3) * 0.42
+		local tilt = v(0, 0, (index - 3) * 5)
+		blob(
+			parts,
+			`Strip{index}`,
+			gownDark,
+			v(0.34, length, 0.1),
+			v(x, -2.25 - length / 2, -0.7),
+			tilt,
+			CLOTH
+		)
+		blob(
+			parts,
+			`StripBack{index}`,
+			gownDark,
+			v(0.34, length, 0.1),
+			v(x, -2.25 - length / 2, 0.7),
+			tilt,
+			CLOTH
+		)
+	end
+	-- Head: a gaunt face with sunken glowing eyes and fangs
+	limb(parts, "Neck", skin, v(0, 1.8, -0.1), v(0, 2.2, -0.25), 0.38)
+	blob(parts, "Head", skin, v(1.15, 1.4, 1.1), v(0, 2.7, -0.3))
+	blob(parts, "Chin", skin, v(0.5, 0.4, 0.5), v(0, 2.05, -0.6))
+	blobPair(parts, "Cheek", skinDark, v(0.3, 0.5, 0.15), v(0.42, 2.5, -0.7))
+	blobPair(parts, "Socket", hollow, v(0.42, 0.3, 0.2), v(0.27, 2.8, -0.8))
+	blobPair(parts, "Eye", eye, v(0.22, 0.2, 0.15), v(0.27, 2.8, -0.88), nil, NEON)
+	blob(parts, "Nose", skinDark, v(0.18, 0.35, 0.2), v(0, 2.55, -0.88))
+	blob(parts, "Mouth", hollow, v(0.7, 0.2, 0.15), v(0, 2.35, -0.84))
+	limbPair(parts, "Fang", BONE, v(0.17, 2.4, -0.88), v(0.17, 2.05, -0.9), 0.09)
+	-- Long black hair down the back, with locks framing the face
+	blob(parts, "HairBack", hair, v(1.5, 1.9, 0.7), v(0, 2.65, 0.25))
+	for index = -3, 3 do
+		strand(
+			parts,
+			`Hair{index}`,
+			hair,
+			v(index * 0.17, 3.15, 0.2),
+			v(index * 0.05, -0.15, 0.5),
+			v(0, -1, -0.1),
+			{ segments = 8, step = 0.55, from = 0.28, to = 0.06, bend = 15 }
+		)
+	end
+	strandPair(parts, "Lock", hair, v(0.55, 3.2, -0.35), v(0.2, -0.3, -0.1), v(0, -1, 0.1), {
+		segments = 5,
+		step = 0.5,
+		from = 0.2,
+		to = 0.05,
+		bend = 35,
+	})
+	-- Thin arms reaching forward, ending in claws
+	blobPair(parts, "Shoulder", skin, v(0.45, 0.45, 0.45), v(0.75, 1.7, 0))
+	limbPair(parts, "UpperArm", skin, v(0.75, 1.7, 0), v(1.15, 0.8, -0.4), 0.26)
+	limbPair(parts, "Forearm", skin, v(1.15, 0.8, -0.4), v(0.9, 0.6, -1.4), 0.2)
+	blobPair(parts, "Hand", skinDark, v(0.3, 0.4, 0.3), v(0.9, 0.5, -1.5))
+	for claw = 1, 4 do
+		local spread = (claw - 2.5) * 0.1
+		local from = v(0.9 + spread, 0.4, -1.55)
+		limbPair(parts, `Claw{claw}`, BONE, from, v(0.9 + spread * 1.7, 0.1, -2.15), 0.06)
+	end
+	-- Feet turned backwards: heels at the front, toes pointing behind her
+	limbPair(parts, "Shin", skin, v(0.4, -2.2, 0.1), v(0.4, -2.75, 0.15), 0.22)
+	blobPair(parts, "Heel", skinDark, v(0.35, 0.35, 0.35), v(0.4, -2.8, -0.15))
+	blobPair(parts, "Foot", skinDark, v(0.45, 0.22, 0.95), v(0.4, -2.85, 0.35))
+	for toe = -1, 1 do
+		local x = 0.4 + toe * 0.13
+		limbPair(parts, `Toe{toe}`, BONE, v(x, -2.88, 0.75), v(x, -2.88, 1.05), 0.1)
+	end
+	return parts
+end
+
 type RakshasaPalette = {
 	skin: Color3,
 	light: Color3,
@@ -505,6 +595,7 @@ end
 local EnemyLooks: { [string]: { BodyPart } } = {
 	Pishacha = pishacha(),
 	Vetala = vetala(),
+	Chudail = chudail(),
 	Rakshasa = rakshasa({
 		skin = Color3.fromRGB(150, 46, 42),
 		light = Color3.fromRGB(180, 70, 58),
