@@ -70,6 +70,7 @@ docs/PLAYTEST.md         What has not been run in Studio yet, and what to check
 src/shared               Types, Remotes, Config (Enemies, Paths, GameConfig)
 src/server               Main + Services (Data, Enemy, Combat)
 src/client               Main, Input, HUD
-tools                    Studio command bar scripts (enemy gallery, zone builder). Not synced.
+map                      The map as model files (Zone1, Baseplate, SpawnLocation), mapped into Workspace.
+tools                    Studio command bar scripts (enemy gallery, zone builder) and extract-map. Not synced.
 tests                    Headless checks run with Lune: `lune run tests/run`. Not synced.
 ```
