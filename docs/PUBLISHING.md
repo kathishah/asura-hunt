@@ -31,15 +31,23 @@ Not touched by an upload: experience-level settings in Creator Hub (name, privac
 
 ## Publishing
 
-GitHub, then **Actions > Publish to Roblox > Run workflow**, branch `main`. Or:
+Merge to `main` first: the workflow publishes `main` on GitHub, not your working copy. Then, in the project folder:
 
 ```bash
-gh workflow run publish.yml --ref main -f version_type=Published
+./publish.sh
 ```
 
-`version_type` is `Published` (goes live) or `Saved` (stores a version without publishing it; the docs we read only show `Published`, so check `Saved` works before relying on it). The job runs the normal checks, builds, runs the place check, uploads, and prints the version number Roblox returns.
+It shows what will go out, and if Roblox Studio is running it asks before quitting it (politely first, so Studio can offer to save; force-stopping is a second question), waits, and checks Studio is gone. Then it starts the workflow, waits for it, and prints what Roblox answered. `./publish.sh --saved` stores a version without publishing it.
 
-After a publish, join the live game from the Roblox site or app and check it. Studio may tell you there is a newer version of the place.
+**Close Studio first.** With Studio open on the place (Team Create on), Roblox answered every upload with HTTP 409, "Save failed. Server is busy and unable to process your upload request." The same upload worked as soon as Studio was closed. The docs do not mention this, so it is an observation, not a documented rule.
+
+Without the script: GitHub, then **Actions > Publish to Roblox > Run workflow**, branch `main`, or `gh workflow run publish.yml --ref main -f version_type=Published`. The job runs the normal checks, builds, runs the place check, uploads, and prints the version number Roblox returns.
+
+`version_type` is `Published` (goes live) or `Saved`. Both returned HTTP 200 in testing. The docs only show `Published`, and in our first test both calls returned the same version number (11), so do not assume a `Saved` upload leaves the live game untouched until you have seen it do so.
+
+After a publish, join the live game from the Roblox site or app and check it. When you reopen Studio it may offer a newer version of the place: accept it, then reconnect Rojo.
+
+If the key stops working (HTTP 401 or 403), it expired or was unused for 60 days: create a new one in Creator Hub and run `gh secret set ROBLOX_API_KEY` again.
 
 ## Keeping Studio and git in step
 
