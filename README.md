@@ -78,3 +78,7 @@ map                      The map as model files (Zone1, Baseplate, SpawnLocation
 tools                    Studio command bar scripts (enemy gallery, zone builder) and extract-map. Not synced.
 tests                    Headless checks run with Lune: `lune run tests/run`. Not synced.
 ```
+
+## License
+
+[MIT](LICENSE). It covers the code, the docs, the map files and the images in `assets/` and `docs/reference/`. Roblox's own assets (the sky textures and anything loaded by `rbxassetid://`) belong to Roblox and are not covered.
