@@ -1,0 +1,39 @@
+# The same checks as "Definition of done" in AGENTS.md. A red check means: do not merge.
+# It cannot judge how the game looks or feels; that is still the Studio playtest.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      # Installs the versions pinned in rokit.toml.
+      - uses: CompeyDev/setup-rokit@v0.2.1
+
+      - name: Format (StyLua)
+        run: stylua --check src tests
+
+      - name: Lint (Selene)
+        run: |
+          selene generate-roblox-std
+          selene src
+
+      - name: Headless tests (Lune)
+        run: lune run tests/run
+
+      - name: Build the place file (Rojo)
+        run: rojo build -o build/AsuraHunt.rbxl
