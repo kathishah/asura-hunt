@@ -79,8 +79,11 @@ return function(t)
 		return { Name = name, UserId = userId, Parent = true }
 	end
 
-	local function runLoad(record: any, loadError: boolean?)
-		local store = { saved = {}, updates = 0 }
+	-- `opts.beforeLeave(store)` runs after loading, to change what is stored (as another server
+	-- would). `opts.leaves` fires the leave handler that many times at once, and `opts.storeDelay`
+	-- makes each store call take that long, so saves overlap.
+	local function runLoad(record: any, loadError: boolean?, opts: any?)
+		local store = { saved = {}, updates = 0, writes = 0, active = 0, maxActive = 0 }
 		if record ~= nil then
 			store.saved["Player_1"] = record
 		end
@@ -92,7 +95,18 @@ return function(t)
 		end
 		function store.UpdateAsync(_, key, transform)
 			store.updates += 1
-			store.saved[key] = transform(store.saved[key])
+			store.active += 1
+			store.maxActive = math.max(store.maxActive, store.active)
+			if opts and opts.storeDelay then
+				task.wait(opts.storeDelay)
+			end
+			local result = transform(store.saved[key])
+			-- Like Roblox, returning nil cancels the update and leaves the record alone.
+			if result ~= nil then
+				store.writes += 1
+				store.saved[key] = result
+			end
+			store.active -= 1
 		end
 
 		local player = fakePlayer("Tester", 1)
@@ -122,8 +136,21 @@ return function(t)
 		DataService.start()
 		task.wait(0.2)
 		local data = DataService.get(player)
+		if opts and opts.beforeLeave then
+			opts.beforeLeave(store)
+		end
 		for _, handler in removing do
-			handler(player) -- the player leaves: this saves, unless loading failed
+			-- the player leaves: this saves, unless loading failed
+			for _ = 1, (opts and opts.leaves) or 1 do
+				if opts and opts.leaves then
+					task.spawn(handler, player)
+				else
+					handler(player)
+				end
+			end
+		end
+		if opts and opts.leaves then
+			task.wait(0.6)
 		end
 		return data, store, world
 	end
@@ -161,6 +188,28 @@ return function(t)
 			failedStore.updates == 0,
 			failedStore.updates
 		)
+
+		-- Another server saved newer data after we loaded: our save must not overwrite it.
+		local _, racedStore = runLoad({ version = 2, level = 4 }, false, {
+			beforeLeave = function(store)
+				store.saved["Player_1"] = { version = 99, level = 30 }
+			end,
+		})
+		check(
+			"a save never overwrites data from a newer build",
+			racedStore.writes == 0,
+			racedStore.writes
+		)
+		check("the newer record is still there", racedStore.saved["Player_1"].level == 30)
+
+		-- An autosave and the exit save fire together: they take turns instead of overlapping.
+		local _, busyStore = runLoad(
+			{ version = 2, level = 4 },
+			false,
+			{ leaves = 2, storeDelay = 0.1 }
+		)
+		check("two saves at once never overlap", busyStore.maxActive == 1, busyStore.maxActive)
+		check("the second save sees the player is gone", busyStore.writes == 1, busyStore.writes)
 
 		local fresh, freshStore = runLoad(nil)
 		check("a new player starts with defaults", fresh ~= nil and fresh.level == 1)

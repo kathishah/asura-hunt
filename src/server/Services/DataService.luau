@@ -158,25 +158,55 @@ local function loadPlayer(player: Player)
 	notify(player)
 end
 
-local function savePlayer(player: Player)
+-- One save at a time per player, so an autosave and the exit save cannot race each other.
+local saving: { [Player]: boolean } = {}
+
+-- `skipIfBusy` is for autosave: if a save is already running, the next autosave will cover it.
+local function savePlayer(player: Player, skipIfBusy: boolean?)
+	if saving[player] then
+		if skipIfBusy then
+			return
+		end
+		while saving[player] do
+			task.wait(0.1)
+		end
+	end
+
 	local data = sessions[player]
 	local dataStore = store
 	if not data or not dataStore or loadFailed[player] then
 		return
 	end
 
+	saving[player] = true
 	for attempt = 1, MAX_ATTEMPTS do
+		local refused = false
 		local success, err = pcall(function()
-			dataStore:UpdateAsync(keyFor(player), function()
+			dataStore:UpdateAsync(keyFor(player), function(stored: any)
+				-- Another server running newer code has saved since we loaded: never overwrite it.
+				local storedVersion = if type(stored) == "table"
+					then tonumber(stored.version)
+					else nil
+				if storedVersion and storedVersion > GameConfig.DATA_VERSION then
+					refused = true
+					return nil -- cancels the update
+				end
 				return data
 			end)
 		end)
 		if success then
-			return
+			if refused then
+				loadFailed[player] = true -- stop saving for the rest of the session
+				warn(
+					`[DataService] {player.Name}'s stored data is newer than this build. Not saved.`
+				)
+			end
+			break
 		end
 		warn(`[DataService] Save attempt {attempt} failed for {player.Name}: {err}`)
 		task.wait(attempt * 2)
 	end
+	saving[player] = nil
 end
 
 function DataService.get(player: Player): Types.PlayerData?

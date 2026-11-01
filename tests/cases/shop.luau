@@ -102,7 +102,10 @@ return function(t)
 				return store.saved[key]
 			end
 			function store.UpdateAsync(_, key, transform)
-				store.saved[key] = transform(store.saved[key])
+				local result = transform(store.saved[key])
+				if result ~= nil then -- nil cancels the update, as in Roblox
+					store.saved[key] = result
+				end
 			end
 			local player = { Name = "Shopper", UserId = 1, Parent = true }
 			local world = harness.newWorld({
