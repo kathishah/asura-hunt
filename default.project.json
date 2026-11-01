@@ -13,6 +13,15 @@
 			"$ignoreUnknownInstances": true,
 			"$properties": {
 				"ClockTime": 17.6,
+				"TimeOfDay": "17:36:00",
+				"Technology": "ShadowMap",
+				"GlobalShadows": true,
+				"ShadowSoftness": 0.2,
+				"EnvironmentDiffuseScale": 1,
+				"EnvironmentSpecularScale": 1,
+				"GeographicLatitude": 0,
+				"Outlines": false,
+				"PrioritizeLightingQuality": true,
 				"Brightness": 1.2,
 				"ExposureCompensation": 0.2,
 				"Ambient": { "Color3": [0.16, 0.12, 0.22] },
@@ -27,6 +36,37 @@
 					"Glare": 0,
 					"Color": { "Color3": [0.78, 0.62, 0.6] },
 					"Decay": { "Color3": [0.55, 0.4, 0.5] }
+				}
+			},
+			"Sky": {
+				"$className": "Sky",
+				"$properties": {
+					"SkyboxBk": "rbxassetid://6444884337",
+					"SkyboxDn": "rbxassetid://6444884785",
+					"SkyboxFt": "rbxassetid://6444884337",
+					"SkyboxLf": "rbxassetid://6444884337",
+					"SkyboxRt": "rbxassetid://6444884337",
+					"SkyboxUp": "rbxassetid://6412503613",
+					"StarCount": 3000,
+					"CelestialBodiesShown": true,
+					"SunAngularSize": 11,
+					"MoonAngularSize": 11,
+					"SunTextureId": "rbxassetid://6196665106",
+					"MoonTextureId": "rbxassetid://6444320592"
+				}
+			},
+			"SunRays": {
+				"$className": "SunRaysEffect",
+				"$properties": { "Intensity": 0.01, "Spread": 0.1 }
+			},
+			"DepthOfField": {
+				"$className": "DepthOfFieldEffect",
+				"$properties": {
+					"Enabled": false,
+					"FarIntensity": 0.1,
+					"FocusDistance": 0.05,
+					"InFocusRadius": 30,
+					"NearIntensity": 0.75
 				}
 			},
 			"Bloom": {
@@ -51,8 +91,34 @@
 		"ServerStorage": {
 			"$className": "ServerStorage"
 		},
+		"Players": {
+			"$className": "Players",
+			"$properties": { "RespawnTime": 3 }
+		},
+		"SoundService": {
+			"$className": "SoundService",
+			"$properties": { "RespectFilteringEnabled": true, "DefaultListenerLocation": "Camera" }
+		},
+		"StarterGui": {
+			"$className": "StarterGui",
+			"$properties": { "ScreenOrientation": "Sensor" }
+		},
+		"TextChatService": {
+			"$className": "TextChatService",
+			"$properties": { "ChatVersion": "TextChatService", "IsLegacyChatDisabled": true }
+		},
+		"MaterialService": {
+			"$className": "MaterialService",
+			"$properties": { "Use2022MaterialsXml": true }
+		},
 		"StarterPlayer": {
 			"$className": "StarterPlayer",
+			"$properties": {
+				"CameraMaxZoomDistance": 128,
+				"CharacterBreakJointsOnDeath": false,
+				"CharacterUseJumpPower": false,
+				"AvatarJointUpgrade": "Enabled"
+			},
 			"StarterPlayerScripts": {
 				"$className": "StarterPlayerScripts",
 				"Client": {
@@ -63,6 +129,14 @@
 		"Workspace": {
 			"$className": "Workspace",
 			"$ignoreUnknownInstances": true,
+			"$properties": {
+				"StreamingEnabled": true,
+				"StreamOutBehavior": "Opportunistic",
+				"StreamingIntegrityMode": "PauseOutsideLoadedArea",
+				"SignalBehavior": "Deferred",
+				"PlayerScriptsUseInputActionSystem": "Enabled",
+				"PlayerCharacterDestroyBehavior": "Enabled"
+			},
 			"Zone1": { "$path": "map/Zone1.rbxm" },
 			"Baseplate": { "$path": "map/Baseplate.rbxm" },
 			"SpawnLocation": { "$path": "map/SpawnLocation.rbxm" }

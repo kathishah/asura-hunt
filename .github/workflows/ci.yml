@@ -6,13 +6,16 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The publish workflow runs these same checks first.
+  workflow_call:
 
 permissions:
   contents: read
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Only a newer push to the same pull request should cancel an old run, never a publish.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
@@ -39,3 +42,6 @@ jobs:
         run: |
           mkdir -p build
           rojo build -o build/AsuraHunt.rbxl
+
+      - name: Check the built place is complete (map, scripts, settings)
+        run: lune run tools/check-place build/AsuraHunt.rbxl

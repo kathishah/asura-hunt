@@ -29,6 +29,10 @@ Edit a `.luau` file, save, and Studio updates live. Stop and re-press Play to te
 
 `.github/workflows/ci.yml` runs on every pull request and every push to `main`: `stylua --check`, `selene`, `lune run tests/run` and `rojo build`. Fix a red check before merging. It cannot judge how the game looks or feels, so the Studio playtest in `docs/PLAYTEST.md` still matters. It does not publish the game: the map lives in the Studio place, not in git, so publish from Studio (File > Publish to Roblox) after merging.
 
+## Publishing
+
+`.github/workflows/publish.yml` uploads the built game to Roblox on demand (Actions > Publish to Roblox). One-time setup and what it replaces are in `docs/PUBLISHING.md`. Publishing from Studio (File > Publish) still works.
+
 ## Controls
 
 | Action | PC | Mobile / gamepad |
