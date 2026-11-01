@@ -121,8 +121,9 @@ local function strike(
 		if index > COMBAT.maxTargetsPerHit then
 			break
 		end
-		EnemyService.damage(enemy, damage, player)
-		damageRemote:FireClient(player, enemy.root.Position, math.floor(damage + 0.5))
+		if EnemyService.damage(enemy, damage, player) then
+			damageRemote:FireClient(player, enemy.root.Position, math.floor(damage + 0.5))
+		end
 	end
 end
 

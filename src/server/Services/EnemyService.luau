@@ -344,9 +344,12 @@ local function flashHit(state: EnemyState)
 	end)
 end
 
-function EnemyService.damage(state: EnemyState, amount: number, attacker: Player)
-	if state.dead then
-		return
+-- Returns false if the hit was refused because the enemy is already dead.
+function EnemyService.damage(state: EnemyState, amount: number, attacker: Player): boolean
+	-- `dead` is only set when the Died handler runs, which is deferred. Until then a second hit on
+	-- the same frame would pass that check and steal the kill, so health decides too.
+	if state.dead or state.humanoid.Health <= 0 then
+		return false
 	end
 	state.lastAttacker = attacker
 	state.humanoid:TakeDamage(amount)
@@ -356,6 +359,7 @@ function EnemyService.damage(state: EnemyState, amount: number, attacker: Player
 	if state.animator and not state.windupEndsAt and state.humanoid.Health > 0 then
 		state.animator:flinch()
 	end
+	return true
 end
 
 local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
