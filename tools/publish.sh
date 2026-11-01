@@ -2,8 +2,8 @@
 # Publishes the game to Roblox: runs the "Publish to Roblox" GitHub workflow for `main`, waits for
 # it, and shows what Roblox answered.
 #
-#   ./publish.sh            publish (goes live)
-#   ./publish.sh --saved    store a version without publishing it
+#   tools/publish.sh            publish (goes live)
+#   tools/publish.sh --saved    store a version without publishing it
 #
 # Roblox refuses an upload while Studio has the place open (HTTP 409 "server is busy"), so if Studio
 # is running this asks before closing it, waits, and checks it is really gone.
@@ -14,7 +14,7 @@
 # Testing: PUBLISH_DRY_RUN=1 skips the GitHub step; STUDIO_QUIT_WAIT=<seconds> shortens the wait.
 
 set -euo pipefail
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.." # the project root, wherever it is run from
 
 STUDIO_PROCESS="RobloxStudio"
 STUDIO_BUNDLE_ID="com.Roblox.RobloxStudio"
