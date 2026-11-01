@@ -92,6 +92,17 @@ Run by Claude in Studio on `main`, before Studio's main window closed unexpected
 
 **Studio closed its window.** While I was testing, at about 18:10 Studio's Place1 window closed and the playtest ended, which I did not cause. Studio is still running, with a "Baseplate" loading dialog. Your map is in `tools/build-zone1.luau` (it already has the beige pillar hall), so it can be rebuilt, and I copied Studio's autosave (from 16:58) to the scratchpad as a backup.
 
+## Player health numbers (feedback from the first private playtest)
+
+Added after the first private release: your son asked for the health number, not just the bar. Headless checks (`tests/cases/player_health.luau`), lint and build pass. *Every item below was checked by hand in Studio by the human on 31 Oct 2026 and passed.*
+
+- [x] **Bar and numbers.** At the bottom centre, above the E and Q boxes, a bar reads `100 / 100` at the start.
+- [x] **Taking damage.** Get hit by a Ghoul: the number drops (for example `94 / 100`), the bar shortens, and it turns yellow below half and red below a quarter.
+- [x] **Max health changes.** Spend a point on Vitality, or equip the Leather Vest in the shop: the max in the number goes up (`110`, `130`).
+- [x] **Death and respawn.** After you die and respawn the bar and number show the new character, not `0 / 0`.
+- [x] **Roblox's own bar is gone.** No second health bar at the top right.
+- [x] **Nothing overlaps.** The bar does not sit on the E and Q boxes. On a phone-sized window it does not collide with the on-screen buttons (the Shop button is bottom-left).
+
 ## After testing
 
 Tell Claude what failed and it will fix it. When a branch is good, merge it into `main` and push.

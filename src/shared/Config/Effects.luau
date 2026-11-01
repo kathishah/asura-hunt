@@ -36,6 +36,15 @@ local Effects = {
 		},
 		smoothSeconds = 0.15, -- how quickly the bar slides to its new length
 	},
+
+	-- The player's own bar, bottom centre above the E and Q boxes. Fill colours come from
+	-- HEALTH_BAR.colors.
+	PLAYER_HEALTH = {
+		width = 240, -- pixels
+		height = 24,
+		bottomOffset = 82, -- pixels from the screen bottom, clearing the cooldown boxes
+		textSize = 16,
+	},
 }
 
 return Effects

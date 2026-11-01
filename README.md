@@ -6,11 +6,9 @@ An original Roblox action RPG: choose a path, fight folklore demons, level up, d
 
 1. **Roblox Studio:** install from roblox.com and sign in.
 2. **Rokit** (tool manager): install it following the README at https://github.com/rojo-rbx/rokit (the install command changes over time, so use theirs).
-3. **Tools:** in this folder run:
+3. **Tools:** in this folder run the following. `rokit.toml` pins Rojo, StyLua, Selene and Lune to the same versions CI uses.
    ```bash
-   rokit add rojo-rbx/rojo
-   rokit add Kampfkarren/selene
-   rokit add JohnnyMorganz/StyLua
+   rokit install
    selene generate-roblox-std
    ```
 4. **Rojo plugin for Studio:** run `rojo plugin install`, or install the Rojo plugin from the Creator Store inside Studio. The plugin and the `rojo` command should be the same major version (7.x).
@@ -27,6 +25,10 @@ An original Roblox action RPG: choose a path, fight folklore demons, level up, d
 
 Edit a `.luau` file, save, and Studio updates live. Stop and re-press Play to test.
 
+## Checks (CI)
+
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`: `stylua --check`, `selene`, `lune run tests/run` and `rojo build`. Fix a red check before merging. It cannot judge how the game looks or feels, so the Studio playtest in `docs/PLAYTEST.md` still matters. It does not publish the game: the map lives in the Studio place, not in git, so publish from Studio (File > Publish to Roblox) after merging.
+
 ## Controls
 
 | Action | PC | Mobile / gamepad |
@@ -40,7 +42,7 @@ On a PC, **B is reserved for a future backpack screen** and the shop is on **P**
 
 A "How to play" panel on the right ticks off each control the first time you use it, then fades away (words in `src/shared/Config/Tutorial.luau`). Enemies hunch lower as they are hurt and fall over when they die (tuning in `src/shared/Config/Animations.luau`); sounds are listed in `src/shared/Config/Sounds.luau`.
 
-The panel at top-left shows level, XP, gold and stats. Buttons let you switch path and spend stat points.
+The panel at top-left shows level, XP, gold and stats. Buttons let you switch path and spend stat points. Your health is a bar with the numbers on it (like `85 / 100`) at the bottom centre, above the E and Q boxes; it replaces Roblox's built-in health bar (look in `src/shared/Config/Effects.luau`, `PLAYER_HEALTH`).
 
 ## What works in this skeleton
 
