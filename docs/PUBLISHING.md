@@ -34,10 +34,10 @@ Not touched by an upload: experience-level settings in Creator Hub (name, privac
 Merge to `main` first: the workflow publishes `main` on GitHub, not your working copy. Then, in the project folder:
 
 ```bash
-./publish.sh
+tools/publish.sh
 ```
 
-It shows what will go out, and if Roblox Studio is running it asks before quitting it (politely first, so Studio can offer to save; force-stopping is a second question), waits, and checks Studio is gone. Then it starts the workflow, waits for it, and prints what Roblox answered. `./publish.sh --saved` stores a version without publishing it.
+It shows what will go out, and if Roblox Studio is running it asks before quitting it (politely first, so Studio can offer to save; force-stopping is a second question), waits, and checks Studio is gone. Then it starts the workflow, waits for it, and prints what Roblox answered. `tools/publish.sh --saved` stores a version without publishing it.
 
 **Close Studio first.** With Studio open on the place (Team Create on), Roblox answered every upload with HTTP 409, "Save failed. Server is busy and unable to process your upload request." The same upload worked as soon as Studio was closed. The docs do not mention this, so it is an observation, not a documented rule.
 

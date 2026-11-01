@@ -31,7 +31,7 @@ Edit a `.luau` file, save, and Studio updates live. Stop and re-press Play to te
 
 ## Publishing
 
-After merging to `main`, run `./publish.sh`. It closes Roblox Studio first (with your permission), because Roblox rejects an upload while Studio has the place open, then runs the GitHub workflow `publish.yml` and shows Roblox's answer. One-time setup and what an upload replaces are in `docs/PUBLISHING.md`. Publishing from Studio (File > Publish) still works.
+After merging to `main`, run `tools/publish.sh`. It closes Roblox Studio first (with your permission), because Roblox rejects an upload while Studio has the place open, then runs the GitHub workflow `publish.yml` and shows Roblox's answer. One-time setup and what an upload replaces are in `docs/PUBLISHING.md`. Publishing from Studio (File > Publish) still works.
 
 ## Controls
 
