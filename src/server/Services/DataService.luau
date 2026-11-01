@@ -22,6 +22,11 @@ if not store then
 	warn(`[DataService] DataStore unavailable (publish the place to enable saving): {storeResult}`)
 end
 
+-- Identifies this server in a record's session lock. JobId is empty in Studio, so make one up.
+local serverId = if type(game.JobId) == "string" and game.JobId ~= ""
+	then game.JobId
+	else `studio-{os.time()}-{math.random(1, 1000000000)}`
+
 local sessions: { [Player]: Types.PlayerData } = {}
 -- If loading failed we play with temporary data and must NOT save it over the real record.
 local loadFailed: { [Player]: boolean } = {}
@@ -114,55 +119,12 @@ local function notify(player: Player)
 	end
 end
 
-local function loadPlayer(player: Player)
-	local success = false
-	local result: any = nil
-	local dataStore = store
-	-- No store means retrying cannot help, so skip straight to the load-failed path.
-	local attempts = if dataStore then MAX_ATTEMPTS else 0
-
-	for attempt = 1, attempts do
-		success, result = pcall(function()
-			return (dataStore :: DataStore):GetAsync(keyFor(player))
-		end)
-		if success then
-			break
-		end
-		warn(`[DataService] Load attempt {attempt} failed for {player.Name}: {result}`)
-		task.wait(attempt * 2)
-	end
-
-	if not player.Parent then
-		return -- left while we were loading
-	end
-
-	-- A record saved by newer code (another branch, or a later build) must not be overwritten by
-	-- older code that would drop the fields it does not know about.
-	local savedVersion = if type(result) == "table" then tonumber(result.version) else nil
-	if success and savedVersion and savedVersion > GameConfig.DATA_VERSION then
-		success = false
-		warn(
-			`[DataService] {player.Name}'s data is version {savedVersion}, newer than this build's `
-				.. `{GameConfig.DATA_VERSION}. Progress will not be saved.`
-		)
-	end
-
-	if success then
-		sessions[player] = reconcile(result)
-	else
-		loadFailed[player] = true
-		sessions[player] = defaultData()
-		warn(`[DataService] Could not load data for {player.Name}. Progress will not be saved.`)
-	end
-
-	notify(player)
-end
-
 -- One save at a time per player, so an autosave and the exit save cannot race each other.
 local saving: { [Player]: boolean } = {}
 
 -- `skipIfBusy` is for autosave: if a save is already running, the next autosave will cover it.
-local function savePlayer(player: Player, skipIfBusy: boolean?)
+-- `release` gives up this server's claim on the record, for when the player is leaving.
+local function savePlayer(player: Player, skipIfBusy: boolean?, release: boolean?)
 	if saving[player] then
 		if skipIfBusy then
 			return
@@ -180,26 +142,32 @@ local function savePlayer(player: Player, skipIfBusy: boolean?)
 
 	saving[player] = true
 	for attempt = 1, MAX_ATTEMPTS do
-		local refused = false
+		local refusal: string? = nil
 		local success, err = pcall(function()
 			dataStore:UpdateAsync(keyFor(player), function(stored: any)
-				-- Another server running newer code has saved since we loaded: never overwrite it.
-				local storedVersion = if type(stored) == "table"
-					then tonumber(stored.version)
-					else nil
-				if storedVersion and storedVersion > GameConfig.DATA_VERSION then
-					refused = true
-					return nil -- cancels the update
+				if type(stored) == "table" then
+					-- Another server running newer code has saved since we loaded: never overwrite it.
+					local storedVersion = tonumber(stored.version)
+					if storedVersion and storedVersion > GameConfig.DATA_VERSION then
+						refusal = "newer"
+						return nil -- cancels the update
+					end
+					-- Another server has claimed the record, so it owns the player now.
+					local lock = stored.session
+					if type(lock) == "table" and lock.jobId ~= serverId then
+						refusal = "claimed by another server"
+						return nil
+					end
 				end
-				return data
+				local record = table.clone(data)
+				record.session = if release then nil else { jobId = serverId, at = os.time() }
+				return record
 			end)
 		end)
 		if success then
-			if refused then
+			if refusal then
 				loadFailed[player] = true -- stop saving for the rest of the session
-				warn(
-					`[DataService] {player.Name}'s stored data is newer than this build. Not saved.`
-				)
+				warn(`[DataService] Not saving {player.Name}: the stored data is {refusal}.`)
 			end
 			break
 		end
@@ -207,6 +175,104 @@ local function savePlayer(player: Player, skipIfBusy: boolean?)
 		task.wait(attempt * 2)
 	end
 	saving[player] = nil
+end
+
+-- Tries to claim a player's stored record for this server in one atomic update. Returns how it
+-- went and the record: "claimed" (ours now), "locked" (another server holds it), "newer" (saved by
+-- newer code, so left alone), or "error" if the store failed.
+local function claimRecord(dataStore: DataStore, player: Player): (string, any)
+	local outcome = "error"
+	local record: any = nil
+	local success, err = pcall(function()
+		dataStore:UpdateAsync(keyFor(player), function(stored: any)
+			if type(stored) ~= "table" then
+				outcome = "claimed"
+				record = nil
+				return {
+					version = GameConfig.DATA_VERSION,
+					session = { jobId = serverId, at = os.time() },
+				}
+			end
+			local storedVersion = tonumber(stored.version)
+			if storedVersion and storedVersion > GameConfig.DATA_VERSION then
+				outcome = "newer"
+				record = stored
+				return nil
+			end
+			local lock = stored.session
+			if
+				type(lock) == "table"
+				and lock.jobId ~= serverId
+				and os.time() - (tonumber(lock.at) or 0) < GameConfig.SESSION_LOCK_SECONDS
+			then
+				outcome = "locked"
+				return nil
+			end
+			stored.session = { jobId = serverId, at = os.time() }
+			outcome = "claimed"
+			record = stored
+			return stored
+		end)
+	end)
+	if not success then
+		return "error", err
+	end
+	return outcome, record
+end
+
+local function loadPlayer(player: Player)
+	local outcome = "error"
+	local result: any = nil
+	local dataStore = store
+	-- No store means retrying cannot help, so skip straight to the load-failed path.
+	local errors = if dataStore then 0 else MAX_ATTEMPTS
+	local lockWaits = 0
+
+	while dataStore and errors < MAX_ATTEMPTS do
+		outcome, result = claimRecord(dataStore, player)
+		if outcome == "error" then
+			errors += 1
+			warn(`[DataService] Load attempt {errors} failed for {player.Name}: {result}`)
+			task.wait(errors * 2)
+		elseif outcome == "locked" and lockWaits < GameConfig.LOCK_RETRIES then
+			-- The server they just left is probably still saving; give it a moment to let go.
+			lockWaits += 1
+			task.wait(GameConfig.LOCK_RETRY_SECONDS)
+		else
+			break
+		end
+	end
+
+	if outcome == "claimed" then
+		sessions[player] = reconcile(result)
+		if not player.Parent then
+			-- Left while we were loading: write the record back to give up the claim.
+			savePlayer(player, false, true)
+			sessions[player] = nil
+			return
+		end
+	else
+		if not player.Parent then
+			return
+		end
+		loadFailed[player] = true
+		sessions[player] = defaultData()
+		if outcome == "newer" then
+			warn(
+				`[DataService] {player.Name}'s data was saved by newer code than this build `
+					.. `({GameConfig.DATA_VERSION}). Progress will not be saved.`
+			)
+		elseif outcome == "locked" then
+			warn(
+				`[DataService] {player.Name}'s data is in use on another server. `
+					.. "Progress will not be saved."
+			)
+		else
+			warn(`[DataService] Could not load data for {player.Name}. Progress will not be saved.`)
+		end
+	end
+
+	notify(player)
 end
 
 function DataService.get(player: Player): Types.PlayerData?
@@ -294,7 +360,7 @@ function DataService.start()
 	end
 
 	Players.PlayerRemoving:Connect(function(player)
-		savePlayer(player)
+		savePlayer(player, false, true)
 		sessions[player] = nil
 		loadFailed[player] = nil
 	end)
@@ -303,7 +369,7 @@ function DataService.start()
 		while true do
 			task.wait(GameConfig.AUTOSAVE_SECONDS)
 			for _, player in Players:GetPlayers() do
-				task.spawn(savePlayer, player)
+				task.spawn(savePlayer, player, true)
 			end
 		end
 	end)
@@ -313,7 +379,7 @@ function DataService.start()
 		for _, player in Players:GetPlayers() do
 			pending += 1
 			task.spawn(function()
-				savePlayer(player)
+				savePlayer(player, false, true)
 				pending -= 1
 			end)
 		end

@@ -5,9 +5,17 @@ local GameConfig = {
 	DATASTORE_NAME = "AsuraHuntPlayerData_v1",
 	-- Bump this whenever the saved shape changes, and handle the old shape in DataService.reconcile.
 	-- 2: added inventory, equipped and unlockedZones.
-	DATA_VERSION = 2,
+	-- 3: a stored record carries a `session` lock (which server owns it). Older builds see the
+	--    higher version and refuse to save over it, so they cannot bypass the lock.
+	DATA_VERSION = 3,
 	FIRST_ZONE = "Zone1",
 	AUTOSAVE_SECONDS = 60,
+	-- A server claims a player's record while they are in it, and autosave keeps the claim fresh.
+	-- A claim older than this is from a crashed server and can be taken over.
+	SESSION_LOCK_SECONDS = 180,
+	-- Joining a second server while the first still holds the claim: wait this long, this many times.
+	LOCK_RETRY_SECONDS = 3,
+	LOCK_RETRIES = 5,
 
 	MAX_LEVEL = 50,
 	STAT_POINTS_PER_LEVEL = 3,
