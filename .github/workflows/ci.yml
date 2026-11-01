@@ -36,4 +36,6 @@ jobs:
         run: lune run tests/run
 
       - name: Build the place file (Rojo)
-        run: rojo build -o build/AsuraHunt.rbxl
+        run: |
+          mkdir -p build
+          rojo build -o build/AsuraHunt.rbxl
