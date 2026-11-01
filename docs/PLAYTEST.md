@@ -80,6 +80,18 @@ Not tested: saving (needs a published place) and a full boss fight. Frame rate f
 
 `m4-shop` is merged into `main`. In one Studio run on the merged build: killing Ghouls earned 40 gold, P opened the shop, and Buy then Equip on the Iron Sword worked with real clicks. The Shop button, the E and Q cooldown boxes, the enemy health bars and the red windup glow all showed together (`docs/reference/playtest/merged-shop-and-combat.jpg`). Swings aimed at the Ghoul first, then did 11.84 damage with the sword, 10.29 without it and 11.84 again after re-equipping (+15% at level 2). 160 headless checks, lint and build pass.
 
+## Tutorial, enemy animations and sounds (31 Oct 2026)
+
+Run by Claude in Studio on `main`, before Studio's main window closed unexpectedly (see the end of this section).
+
+- [x] **How to play panel.** It showed on the right at join with four hollow circles. Real click, E, Q and P each turned their circle green, and the panel was gone about 3 seconds after the last one.
+- [x] **Hurt enemies hunch lower.** A Hungry Ghoul measured 0 degrees of lean at full health, 13.1 at 22/60 and 28 at 12/60 (as set in `Config/Animations.luau`).
+- [x] **Death collapse.** After the last hit the Ghoul fell onto its back (58 degrees at 0.1 s, flat at 88 degrees by 0.3 s), lay there for about 1.2 s, sank through the ground and was gone by about 2.4 s. A screenshot showed it lying flat.
+- [ ] **Not checked by eye or ear:** the hit recoil, the lean-back before a strike and the lunge (the code ran with no errors in Output, but I did not watch them), and **all the sounds**. I could not hear anything, and the script I wrote to confirm that each sound is created would not run. Earlier I confirmed that the 20 placeholder files load and have a length. Please listen: swing, skill, dodge, hurt (when you take damage), hit, the growl before an enemy attacks, and the thud when one falls.
+- [ ] **Bosses and other enemies.** Only the Hungry Ghoul was watched. The Rage King leans 60% as much on purpose.
+
+**Studio closed its window.** While I was testing, at about 18:10 Studio's Place1 window closed and the playtest ended, which I did not cause. Studio is still running, with a "Baseplate" loading dialog. Your map is in `tools/build-zone1.luau` (it already has the beige pillar hall), so it can be rebuilt, and I copied Studio's autosave (from 16:58) to the scratchpad as a backup.
+
 ## After testing
 
 Tell Claude what failed and it will fix it. When a branch is good, merge it into `main` and push.

@@ -38,6 +38,8 @@ Edit a `.luau` file, save, and Studio updates live. Stop and re-press Play to te
 
 On a PC, **B is reserved for a future backpack screen** and the shop is on **P**. Keep new keys away from W, A, S and D, which walk the character.
 
+A "How to play" panel on the right ticks off each control the first time you use it, then fades away (words in `src/shared/Config/Tutorial.luau`). Enemies hunch lower as they are hurt and fall over when they die (tuning in `src/shared/Config/Animations.luau`); sounds are listed in `src/shared/Config/Sounds.luau`.
+
 The panel at top-left shows level, XP, gold and stats. Buttons let you switch path and spend stat points.
 
 ## What works in this skeleton

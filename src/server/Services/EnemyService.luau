@@ -12,13 +12,17 @@ local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local BodyBuilder = require(Shared.BodyBuilder)
+local Animations = require(Shared.Config.Animations)
 local Effects = require(Shared.Config.Effects)
 local Enemies = require(Shared.Config.Enemies)
 local EnemyLooks = require(Shared.Config.EnemyLooks)
+local Posture = require(Shared.Posture)
 local Types = require(Shared.Types)
 local AttackTiming = require(script.Parent.AttackTiming)
+local EnemyAnimator = require(script.Parent.EnemyAnimator)
 local HealthBar = require(script.Parent.HealthBar)
 local EnemyBehaviors = require(script.Parent.EnemyBehaviors)
+local Sfx = require(script.Parent.Sfx)
 
 local SPAWN_TAG = "EnemySpawn"
 local AI_TICK_SECONDS = 0.25
@@ -37,6 +41,8 @@ export type EnemyState = {
 	windupEndsAt: number?,
 	lastAttacker: Player?,
 	dead: boolean,
+	-- Nil for an enemy built from a custom model, which has no BodyPivot to animate.
+	animator: EnemyAnimator.EnemyAnimator?,
 }
 
 -- Placed to match the nested courtyards built by tools/build-zone1.luau: easy fights in the outer
@@ -135,13 +141,14 @@ local function addNameplate(model: Model, root: BasePart, def: Types.EnemyDef, h
 	gui.Parent = model
 end
 
-local function buildModel(def: Types.EnemyDef, position: Vector3): Model?
+-- Returns the model and, for a model built from EnemyLooks, the weld that moves its whole body.
+local function buildModel(def: Types.EnemyDef, position: Vector3): (Model?, Weld?)
 	local enemyModels = ServerStorage:FindFirstChild("EnemyModels")
 	local template = if enemyModels then enemyModels:FindFirstChild(def.id) else nil
 	if template and template:IsA("Model") then
 		local clone = template:Clone()
 		clone:PivotTo(CFrame.new(position))
-		return clone
+		return clone, nil
 	end
 
 	-- Built from EnemyLooks: an invisible hitbox driven by a Humanoid, wearing welded parts.
@@ -164,11 +171,12 @@ local function buildModel(def: Types.EnemyDef, position: Vector3): Model?
 	model.PrimaryPart = root
 
 	local bodyParts = EnemyLooks[def.id]
+	local pivotWeld: Weld? = nil
 	if bodyParts then
 		root.Transparency = 1
-		BodyBuilder.addParts(model, root, bodyParts)
+		pivotWeld = BodyBuilder.addParts(model, root, bodyParts)
 	end
-	return model
+	return model, pivotWeld
 end
 
 local function setupDeath(state: EnemyState)
@@ -184,7 +192,32 @@ local function setupDeath(state: EnemyState)
 			killHandler(killer, state.def)
 		end
 
-		task.delay(2, function()
+		-- Stop where it fell: no more chasing, blocking, glowing or floating name.
+		state.windupEndsAt = nil
+		state.root.Anchored = true
+		state.root.CanCollide = false
+		local glow = state.model:FindFirstChild("Telegraph")
+		if glow then
+			glow:Destroy()
+		end
+		local nameplate = state.model:FindFirstChild("Nameplate")
+		if nameplate and nameplate:IsA("BillboardGui") then
+			nameplate.Enabled = false
+		end
+
+		-- Fall over, lie there, sink out of sight, then remove the body. A model with no animator
+		-- (a custom model) is just removed after a short delay, as before.
+		local animator = state.animator
+		local removeAfter = 2
+		if animator then
+			animator:collapse()
+			removeAfter = Posture.deathSeconds(Animations.DEATH) + 0.3
+		end
+		-- The thud is timed for when the body reaches the ground.
+		task.delay(if animator then Animations.DEATH.fallSeconds else 0, function()
+			Sfx.play("death", state.root)
+		end)
+		task.delay(removeAfter, function()
 			state.model:Destroy()
 		end)
 		task.delay(state.def.respawnSeconds, function()
@@ -200,7 +233,7 @@ function EnemyService.spawn(enemyId: string, position: Vector3)
 		return
 	end
 
-	local model = buildModel(def, position)
+	local model, pivotWeld = buildModel(def, position)
 	if not model then
 		return
 	end
@@ -213,6 +246,8 @@ function EnemyService.spawn(enemyId: string, position: Vector3)
 		return
 	end
 
+	-- Keep the body together when it dies, so it can fall over instead of coming apart.
+	humanoid.BreakJointsOnDeath = false
 	humanoid.MaxHealth = def.maxHealth
 	humanoid.Health = def.maxHealth
 	humanoid.WalkSpeed = def.walkSpeed
@@ -236,9 +271,23 @@ function EnemyService.spawn(enemyId: string, position: Vector3)
 		windupEndsAt = nil,
 		lastAttacker = nil,
 		dead = false,
+		animator = if pivotWeld
+			then EnemyAnimator.new(pivotWeld, root.Size.Y, def.isBoss == true)
+			else nil,
 	}
 	active[model] = state
 	setupDeath(state)
+
+	-- The more hurt it is, the lower it stands. Healing back up (when it gives up the chase)
+	-- straightens it again.
+	local animator = state.animator
+	if animator then
+		humanoid.HealthChanged:Connect(function(health)
+			if health > 0 then
+				animator:setHealth(health / humanoid.MaxHealth)
+			end
+		end)
+	end
 end
 
 -- Enemies in front of `origin`, nearest first.
@@ -302,6 +351,11 @@ function EnemyService.damage(state: EnemyState, amount: number, attacker: Player
 	state.lastAttacker = attacker
 	state.humanoid:TakeDamage(amount)
 	flashHit(state)
+	Sfx.play("hit", state.root)
+	-- Recoil from the hit, but not while winding up, so the red glow pose stays readable.
+	if state.animator and not state.windupEndsAt and state.humanoid.Health > 0 then
+		state.animator:flinch()
+	end
 end
 
 local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
@@ -391,10 +445,20 @@ local function updateEnemy(state: EnemyState)
 	if action == "windup" then
 		state.humanoid:MoveTo(state.root.Position) -- stand still while telegraphing
 		setTelegraph(state, true)
+		Sfx.play("windup", state.root)
+		if state.animator then
+			state.animator:windup(state.def.attackWindup or 0.5)
+		end
 	elseif action == "cancel" then
 		setTelegraph(state, false)
+		if state.animator then
+			state.animator:recover()
+		end
 	elseif action == "strike" then
 		setTelegraph(state, false)
+		if state.animator then
+			state.animator:strike()
+		end
 		local target: EnemyBehaviors.Target = {
 			player = player,
 			humanoid = targetHumanoid,

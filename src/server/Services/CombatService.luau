@@ -16,6 +16,7 @@ local DataService = require(script.Parent.DataService)
 local EnemyService = require(script.Parent.EnemyService)
 local AimAssist = require(script.Parent.AimAssist)
 local SwingEffect = require(script.Parent.SwingEffect)
+local Sfx = require(script.Parent.Sfx)
 local Effects = require(Shared.Config.Effects)
 
 local COMBAT = GameConfig.COMBAT
@@ -144,6 +145,9 @@ local function onAttack(player: Player)
 	end
 	state.comboIndex += 1
 	state.lastAttackAt = now
+	-- Display only: lets the tutorial (and later effects) know an attack was accepted.
+	player:SetAttribute("AttackedAt", workspace:GetServerTimeNow())
+	Sfx.play("swing", root)
 
 	local multiplier = 1
 	if state.comboIndex >= COMBAT.comboLength then
@@ -179,6 +183,7 @@ local function onSkill(player: Player)
 	local skill = Paths[data.path].skill
 	state.nextSkillAt = now + skill.cooldown
 	publishCooldown(player, "Skill", skill.cooldown)
+	Sfx.play("skill", root)
 	strike(
 		player,
 		root,
@@ -191,7 +196,8 @@ local function onSkill(player: Player)
 end
 
 local function onDodge(player: Player)
-	if not getLivingRoot(player) then
+	local root = getLivingRoot(player)
+	if not root then
 		return
 	end
 
@@ -202,6 +208,7 @@ local function onDodge(player: Player)
 	end
 	state.nextDodgeAt = now + COMBAT.dodgeCooldown
 	publishCooldown(player, "Dodge", COMBAT.dodgeCooldown)
+	Sfx.play("dodge", root)
 
 	-- The dash itself is played on the client; the server only grants the i-frames.
 	player:SetAttribute("Invulnerable", true)
@@ -228,6 +235,32 @@ function CombatService.applyCharacterStats(player: Player, data: Types.PlayerDat
 	end
 end
 
+-- Plays the "hurt" sound whenever the player's health drops from damage. A drop that comes with a
+-- change of maximum health (taking off armour) is not damage, so it stays quiet.
+local function watchHurt(player: Player)
+	local function onCharacter(character: Model)
+		local humanoid = character:WaitForChild("Humanoid", 10)
+		local root = character:WaitForChild("HumanoidRootPart", 10)
+		if not humanoid or not humanoid:IsA("Humanoid") or not root then
+			return
+		end
+		local lastHealth = humanoid.Health
+		local lastMax = humanoid.MaxHealth
+		humanoid.HealthChanged:Connect(function(health)
+			if health < lastHealth and humanoid.MaxHealth == lastMax then
+				Sfx.play("hurt", root)
+			end
+			lastHealth = health
+			lastMax = humanoid.MaxHealth
+		end)
+	end
+
+	player.CharacterAdded:Connect(onCharacter)
+	if player.Character then
+		task.spawn(onCharacter, player.Character)
+	end
+end
+
 -- Pays out XP and gold when a player kills an enemy.
 local function onEnemyKilled(player: Player, def: Types.EnemyDef)
 	DataService.addRewards(player, def.xp, def.gold)
@@ -239,6 +272,11 @@ function CombatService.start()
 	Remotes.get("Attack").OnServerEvent:Connect(onAttack)
 	Remotes.get("UseSkill").OnServerEvent:Connect(onSkill)
 	Remotes.get("Dodge").OnServerEvent:Connect(onDodge)
+
+	Players.PlayerAdded:Connect(watchHurt)
+	for _, player in Players:GetPlayers() do
+		watchHurt(player)
+	end
 
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil
