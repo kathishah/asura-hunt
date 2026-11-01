@@ -21,6 +21,7 @@ local Types = require(Shared.Types)
 local AttackTiming = require(script.Parent.AttackTiming)
 local EnemyAnimator = require(script.Parent.EnemyAnimator)
 local HealthBar = require(script.Parent.HealthBar)
+local LineOfSight = require(script.Parent.LineOfSight)
 local EnemyBehaviors = require(script.Parent.EnemyBehaviors)
 local Sfx = require(script.Parent.Sfx)
 
@@ -312,7 +313,8 @@ function EnemyService.getEnemiesInCone(
 		local distance = flat.Magnitude - state.def.size.X / 2
 		if distance <= range then
 			local inCone = flat.Magnitude < 0.01 or flatLook:Dot(flat.Unit) >= coneDot
-			if inCone then
+			-- A wall between you and it stops the hit.
+			if inCone and LineOfSight.clear(origin, state.root.Position) then
 				table.insert(found, { state = state, distance = distance })
 			end
 		end
