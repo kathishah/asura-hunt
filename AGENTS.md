@@ -16,13 +16,15 @@ Working title: **Asura Hunt** (can be renamed). Full design and roadmap: `docs/G
 
 ### Building the map as code
 
-Rojo only syncs scripts, not parts, so map builders are scripts in `tools/` that you paste into Studio's command bar (edit mode, not Play). `tools/build-zone1.luau` is the pattern to follow.
+Rojo does not sync loose parts, so map builders are scripts in `tools/` that you paste into Studio's command bar (edit mode, not Play). `tools/build-zone1.luau` is the pattern to follow.
+
+**The map lives in git** as model files in `map/` (`Zone1.rbxm`, `Baseplate.rbxm`, `SpawnLocation.rbxm`), mapped into Workspace by `default.project.json` (Rojo allows one top-level instance per model file). When Rojo connects it puts these into Studio, and `rojo build` includes them, so a built place has the map. A change made in Studio, by hand or by a builder, is only kept once it is saved back: in Studio use File > Download a Copy, run `lune run tools/extract-map <that .rbxl>`, then commit the changed files in `map/`. A new top-level map piece needs its name added to `MAP_PIECES` in `tools/extract-map.luau` and a line in `default.project.json`.
 
 - **Put it in `tools/`, not `src/`.** It must not run in the game. Keep it as a plain script with no `require`s.
 - **Make it re-runnable.** It deletes and rebuilds only its own folder in Workspace (for example `Workspace.Zone1`) and sets `Parent` last, so running it twice never doubles the map. Studio shows a "Dangerous Command" warning because of the delete; Continue is expected.
 - **Name things and group them in models** (`OuterWall`, `PillarHall`, ...), so the human can find, move, recolour or delete pieces by hand.
 - **Keep the colours and sizes as named constants at the top**, so a restyle is a one-line change.
-- **Hand edits are lost when a builder is re-run.** Before re-running one over a map the human has edited, say so and ask. For a small change, apply it to the open map and update the builder to match.
+- **Hand edits are lost when a builder is re-run.** Before re-running one over a map the human has edited, say so and ask. For a small change, apply it to the open map and update the builder to match. Either way, finish by extracting the map into `map/` as described above.
 - **The map follows rule 10**, like everything else: no deities, idols, sacred symbols or sacred places as scenery.
 - **Spawn points and special spots are plain parts** with tags and attributes (see `EnemyService`), so they can be moved by hand.
 - Rojo is told not to delete what a builder makes: `Workspace` and `Lighting` are marked `$ignoreUnknownInstances` in `default.project.json`.

@@ -62,7 +62,10 @@
 		},
 		"Workspace": {
 			"$className": "Workspace",
-			"$ignoreUnknownInstances": true
+			"$ignoreUnknownInstances": true,
+			"Zone1": { "$path": "map/Zone1.rbxm" },
+			"Baseplate": { "$path": "map/Baseplate.rbxm" },
+			"SpawnLocation": { "$path": "map/SpawnLocation.rbxm" }
 		}
 	}
 }

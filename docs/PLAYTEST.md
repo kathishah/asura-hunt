@@ -16,7 +16,7 @@ These changes pass lint, build and `lune run tests/run`. Claude ran this list in
 3. In Studio open the Rojo plugin, **Disconnect**, then **Connect** to that port (the default is 34872).
 4. Press **Play** (F5). Read the Output window for red errors.
 
-Your map (Workspace > Zone1, built by `tools/build-zone1.luau` and edited by hand) is kept: the project file tells Rojo not to delete it.
+Your map lives in git (`map/*.rbxm`, built by `tools/build-zone1.luau` and edited by hand, then saved back with `tools/extract-map.luau`). Rojo puts it into Studio when it connects, so a hand edit in Studio is lost unless you extract and commit it first.
 
 Only one Studio can follow one Rojo server, so test one branch at a time. To test M1 and M4 together, merge them into a local test branch first (they merge without conflicts).
 

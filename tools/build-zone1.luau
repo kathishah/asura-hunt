@@ -14,8 +14,8 @@
 --   4. Running it again replaces Zone1, so copy anything you want to keep out of that folder first.
 --
 -- Enemy spawns are the positions in EnemyService (DEFAULT_SPAWNS), placed to match these rings.
--- Not part of the game: Rojo does not sync this folder. The map itself lives in your Studio place,
--- so Publish or Save to File to keep it.
+-- Not part of the game: Rojo does not sync this folder. The map lives in git as `map/*.rbxm`. After
+-- running this or editing by hand, File > Download a Copy and run `lune run tools/extract-map`.
 --
 -- Plan (top of the sketch is far, negative Z). Centre of the compound is (0, -110):
 --   outer wall   x -120..120, z -210..-10    gate towers N, S, E, W
