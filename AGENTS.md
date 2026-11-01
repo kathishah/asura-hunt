@@ -20,6 +20,8 @@ Rojo does not sync loose parts, so map builders are scripts in `tools/` that you
 
 **The map lives in git** as model files in `map/` (`Zone1.rbxm`, `Baseplate.rbxm`, `SpawnLocation.rbxm`), mapped into Workspace by `default.project.json` (Rojo allows one top-level instance per model file). When Rojo connects it puts these into Studio, and `rojo build` includes them, so a built place has the map. A change made in Studio, by hand or by a builder, is only kept once it is saved back: in Studio use File > Download a Copy, run `lune run tools/extract-map <that .rbxl>`, then commit the changed files in `map/`. A new top-level map piece needs its name added to `MAP_PIECES` in `tools/extract-map.luau` and a line in `default.project.json`.
 
+**Place settings live in `default.project.json` too** (lighting, sky, streaming, respawn time, chat). Publishing through the API uploads the built file and replaces the live place, so a setting that is only in Studio would be reset. `tools/check-place.luau` guards the important ones; see `docs/PUBLISHING.md`.
+
 - **Put it in `tools/`, not `src/`.** It must not run in the game. Keep it as a plain script with no `require`s.
 - **Make it re-runnable.** It deletes and rebuilds only its own folder in Workspace (for example `Workspace.Zone1`) and sets `Parent` last, so running it twice never doubles the map. Studio shows a "Dangerous Command" warning because of the delete; Continue is expected.
 - **Name things and group them in models** (`OuterWall`, `PillarHall`, ...), so the human can find, move, recolour or delete pieces by hand.

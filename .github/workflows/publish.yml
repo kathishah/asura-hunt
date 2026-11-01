@@ -1,0 +1,62 @@
+# Publishes the game to Roblox through Open Cloud. Run it by hand: Actions > Publish to Roblox >
+# Run workflow. It runs the normal checks first, builds the place with Rojo, checks the build is
+# complete, then uploads it. An upload REPLACES the whole live place, so the map, scripts and place
+# settings must all come from git (see AGENTS.md). Setup is in docs/PUBLISHING.md.
+name: Publish to Roblox
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: "Published goes live now. Saved stores a version without publishing it."
+        type: choice
+        options: [Published, Saved]
+        default: Published
+
+permissions:
+  contents: read
+
+# Never run two uploads at once.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  check:
+    # Only the main branch can publish.
+    if: github.ref == 'refs/heads/main'
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: CompeyDev/setup-rokit@v0.2.1
+
+      - name: Build and check the place
+        run: |
+          mkdir -p build
+          rojo build -o build/AsuraHunt.rbxl
+          lune run tools/check-place build/AsuraHunt.rbxl
+
+      - name: Upload to Roblox
+        env:
+          # The key is a secret; the ids are not, so they are plain repository variables.
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+          PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+          VERSION_TYPE: ${{ inputs.version_type }}
+        run: |
+          set -euo pipefail
+          if [ -z "${ROBLOX_API_KEY}" ]; then echo "::error::The ROBLOX_API_KEY secret is not set"; exit 1; fi
+          case "${UNIVERSE_ID}" in ''|*[!0-9]*) echo "::error::ROBLOX_UNIVERSE_ID must be a number"; exit 1;; esac
+          case "${PLACE_ID}" in ''|*[!0-9]*) echo "::error::ROBLOX_PLACE_ID must be a number"; exit 1;; esac
+          response=$(curl --fail-with-body --silent --show-error --request POST \
+            "https://apis.roblox.com/universes/v1/${UNIVERSE_ID}/places/${PLACE_ID}/versions?versionType=${VERSION_TYPE}" \
+            --header "x-api-key: ${ROBLOX_API_KEY}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary @build/AsuraHunt.rbxl)
+          echo "Roblox answered: ${response}"
+          echo "Uploaded ${GITHUB_SHA::7} as ${VERSION_TYPE}: ${response}" >> "$GITHUB_STEP_SUMMARY"
