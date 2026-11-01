@@ -9,6 +9,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Types = require(Shared.Types)
+local LineOfSight = require(script.Parent.LineOfSight)
 
 export type Attacker = { def: Types.EnemyDef, root: BasePart }
 export type Target = { player: Player, humanoid: Humanoid, root: BasePart }
@@ -65,7 +66,12 @@ local function projectile(attacker: Attacker, target: Target, container: Instanc
 		while travelled < maxTravel do
 			local step = config.speed * RunService.Heartbeat:Wait()
 			travelled += step
+			local before = bolt.Position
 			bolt.Position += direction * step
+			-- A wall stops the bolt.
+			if not LineOfSight.clear(before, bolt.Position) then
+				break
+			end
 			local closeEnough = (target.root.Position - bolt.Position).Magnitude <= config.hitRadius
 			if closeEnough and target.humanoid.Health > 0 then
 				hurt(target, attacker.def.damage)

@@ -21,6 +21,7 @@ local Types = require(Shared.Types)
 local AttackTiming = require(script.Parent.AttackTiming)
 local EnemyAnimator = require(script.Parent.EnemyAnimator)
 local HealthBar = require(script.Parent.HealthBar)
+local LineOfSight = require(script.Parent.LineOfSight)
 local EnemyBehaviors = require(script.Parent.EnemyBehaviors)
 local Sfx = require(script.Parent.Sfx)
 
@@ -39,6 +40,8 @@ export type EnemyState = {
 	spawnPosition: Vector3,
 	nextAttackAt: number,
 	windupEndsAt: number?,
+	-- Who the current windup is aimed at. The strike lands on them or not at all.
+	windupTarget: Player?,
 	lastAttacker: Player?,
 	dead: boolean,
 	-- Nil for an enemy built from a custom model, which has no BodyPivot to animate.
@@ -310,7 +313,8 @@ function EnemyService.getEnemiesInCone(
 		local distance = flat.Magnitude - state.def.size.X / 2
 		if distance <= range then
 			local inCone = flat.Magnitude < 0.01 or flatLook:Dot(flat.Unit) >= coneDot
-			if inCone then
+			-- A wall between you and it stops the hit.
+			if inCone and LineOfSight.clear(origin, state.root.Position) then
 				table.insert(found, { state = state, distance = distance })
 			end
 		end
@@ -344,9 +348,12 @@ local function flashHit(state: EnemyState)
 	end)
 end
 
-function EnemyService.damage(state: EnemyState, amount: number, attacker: Player)
-	if state.dead then
-		return
+-- Returns false if the hit was refused because the enemy is already dead.
+function EnemyService.damage(state: EnemyState, amount: number, attacker: Player): boolean
+	-- `dead` is only set when the Died handler runs, which is deferred. Until then a second hit on
+	-- the same frame would pass that check and steal the kill, so health decides too.
+	if state.dead or state.humanoid.Health <= 0 then
+		return false
 	end
 	state.lastAttacker = attacker
 	state.humanoid:TakeDamage(amount)
@@ -356,6 +363,21 @@ function EnemyService.damage(state: EnemyState, amount: number, attacker: Player
 	if state.animator and not state.windupEndsAt and state.humanoid.Health > 0 then
 		state.animator:flinch()
 	end
+	return true
+end
+
+-- The humanoid and root of a player who is alive and in the world, or nil.
+local function livingParts(player: Player): (Humanoid?, BasePart?)
+	local character = player.Character
+	if not character then
+		return nil, nil
+	end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	local root = character:FindFirstChild("HumanoidRootPart")
+	if humanoid and humanoid.Health > 0 and root and root:IsA("BasePart") then
+		return humanoid, root
+	end
+	return nil, nil
 end
 
 local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
@@ -370,18 +392,14 @@ local function findTarget(state: EnemyState): (Player?, Humanoid?, BasePart?)
 	local bestDistance = state.def.aggroRange
 
 	for _, player in Players:GetPlayers() do
-		local character = player.Character
-		if character then
-			local humanoid = character:FindFirstChildOfClass("Humanoid")
-			local root = character:FindFirstChild("HumanoidRootPart")
-			if humanoid and humanoid.Health > 0 and root and root:IsA("BasePart") then
-				local distance = (root.Position - state.root.Position).Magnitude
-				if distance < bestDistance then
-					bestDistance = distance
-					bestPlayer = player
-					bestHumanoid = humanoid
-					bestRoot = root
-				end
+		local humanoid, root = livingParts(player)
+		if humanoid and root then
+			local distance = (root.Position - state.root.Position).Magnitude
+			if distance < bestDistance then
+				bestDistance = distance
+				bestPlayer = player
+				bestHumanoid = humanoid
+				bestRoot = root
 			end
 		end
 	end
@@ -411,10 +429,30 @@ local function updateEnemy(state: EnemyState)
 	end
 
 	local player, targetHumanoid, targetRoot = findTarget(state)
+
+	-- A windup stays aimed at whoever it started on, so it cannot finish on a different player.
+	-- If that player is gone, the attack is dropped and the enemy picks a target afresh.
+	local lockedPlayer = state.windupTarget
+	if player and state.windupEndsAt and lockedPlayer then
+		local lockedHumanoid, lockedRoot = livingParts(lockedPlayer)
+		if lockedHumanoid and lockedRoot then
+			player, targetHumanoid, targetRoot = lockedPlayer, lockedHumanoid, lockedRoot
+		else
+			state.windupEndsAt = nil
+			state.windupTarget = nil
+			state.nextAttackAt = os.clock() + state.def.attackCooldown * 0.5
+			setTelegraph(state, false)
+			if state.animator then
+				state.animator:recover()
+			end
+		end
+	end
+
 	if not player or not targetHumanoid or not targetRoot then
 		-- No target: drop any half-finished attack, then walk home and recover.
 		if state.windupEndsAt then
 			state.windupEndsAt = nil
+			state.windupTarget = nil
 			setTelegraph(state, false)
 		end
 		local homeDistance = (state.root.Position - state.spawnPosition).Magnitude
@@ -443,6 +481,7 @@ local function updateEnemy(state: EnemyState)
 		state.def.attackCooldown
 	)
 	if action == "windup" then
+		state.windupTarget = player
 		state.humanoid:MoveTo(state.root.Position) -- stand still while telegraphing
 		setTelegraph(state, true)
 		Sfx.play("windup", state.root)
@@ -450,11 +489,13 @@ local function updateEnemy(state: EnemyState)
 			state.animator:windup(state.def.attackWindup or 0.5)
 		end
 	elseif action == "cancel" then
+		state.windupTarget = nil
 		setTelegraph(state, false)
 		if state.animator then
 			state.animator:recover()
 		end
 	elseif action == "strike" then
+		state.windupTarget = nil
 		setTelegraph(state, false)
 		if state.animator then
 			state.animator:strike()
