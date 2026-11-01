@@ -27,7 +27,7 @@ Edit a `.luau` file, save, and Studio updates live. Stop and re-press Play to te
 
 ## Checks (CI)
 
-`.github/workflows/ci.yml` runs on every pull request and every push to `main`: `stylua --check`, `selene`, `lune run tests/run` and `rojo build`. Fix a red check before merging. It cannot judge how the game looks or feels, so the Studio playtest in `docs/PLAYTEST.md` still matters. It does not publish the game: the map lives in the Studio place, not in git, so publish from Studio (File > Publish to Roblox) after merging.
+`.github/workflows/ci.yml` runs on every pull request and every push to `main`: `stylua --check`, `selene`, `lune run tests/run` and `rojo build`. Fix a red check before merging. It cannot judge how the game looks or feels, so the Studio playtest in `docs/PLAYTEST.md` still matters. It does not publish the game; see Publishing below. The map is in git (`map/`), but a map change made by hand in Studio is only kept once you extract it (File > Download a Copy, then `lune run tools/extract-map <file.rbxl>`) and commit the result. Publish replaces the live place with what is in git, so do that before publishing.
 
 ## Publishing
 
@@ -60,7 +60,7 @@ The panel at top-left shows level, XP, gold and stats. Buttons let you switch pa
 
 - **Light playtesting only.** The game has been run in Studio, but only briefly. Paste any red errors from the Output window to your AI tool.
 - Enemies are built from simple blocks, balls and cylinders. Reshape them in `src/shared/Config/EnemyLooks.luau`. If they float or sink into the ground, adjust `HipHeight` in `EnemyService.buildModel`.
-- No attack animations or effects yet, so combat will feel flat until you add them in Studio.
+- Combat has swing arcs, a hit flash, enemy telegraphs, wounded posture and a death collapse, but the player characters have no attack animation yet and the sounds are placeholders.
 - Enemy spawns use a default layout. To place them yourself, add Parts to the map, tag them `EnemySpawn` (Tag Editor plugin or the Properties panel) and give each a string attribute `EnemyId` (for example `Vetala`).
 
 ## Folder map
